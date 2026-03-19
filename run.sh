@@ -4,6 +4,18 @@ cd "$(dirname "$0")"
 # Activate virtual environment
 source .venv/bin/activate
 
+# Load API key from .env file if it exists
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "ERROR: ANTHROPIC_API_KEY is not set."
+    echo "Copy .env.example to .env and add your key:"
+    echo "  cp .env.example .env"
+    exit 1
+fi
+
 echo ""
 echo "  SocialClipper"
 echo "  http://localhost:8000"

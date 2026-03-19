@@ -20,6 +20,10 @@ AI-powered video-to-social-clips pipeline. Drop in a video (or paste a YouTube U
 - **yt-dlp** — for downloading videos from URLs
 - **Anthropic API key** — for Claude-powered analysis and drafting
 
+> **Warning:** Never commit your API key! Copy `.env.example` to `.env` and add your key there. The `.env` file is gitignored.
+
+> **Apple Silicon required.** MLX Whisper only runs on Macs with M1/M2/M3/M4 chips.
+
 ## Quick Start
 
 ```bash
@@ -31,8 +35,9 @@ cd socialclipper
 chmod +x install.sh
 ./install.sh
 
-# 3. Set your API key
-export ANTHROPIC_API_KEY='sk-ant-...'
+# 3. Set your API key (copy .env.example to .env and fill in your key)
+cp .env.example .env
+# Edit .env and add your Anthropic API key
 
 # 4. Start the server
 ./run.sh
