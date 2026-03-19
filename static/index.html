@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialClipper</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>SocialClipper</h1>
+            <nav class="nav" id="main-nav">
+                <a href="/" class="active">Create</a>
+                <a href="/processing">Processing</a>
+                <a href="/library">Library</a>
+            </nav>
+        </header>
+
+        <!-- Input Section -->
+        <section id="input-section" class="card">
+            <form id="job-form">
+                <!-- URL Input -->
+                <div class="input-group">
+                    <label for="url-input">Paste a link (YouTube, Instagram, etc.)</label>
+                    <input type="text" id="url-input" name="url"
+                           placeholder="https://youtube.com/watch?v=..."
+                           autocomplete="off">
+                </div>
+
+                <div class="divider"><span>or</span></div>
+
+                <!-- File Upload -->
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <p>Drag & drop a video file here</p>
+                    <p class="upload-hint">or click to browse</p>
+                    <input type="file" id="file-input" accept="video/*" hidden>
+                    <p id="file-name" class="file-name" hidden></p>
+                </div>
+
+                <!-- Context (optional) -->
+                <div class="input-group">
+                    <label for="context-input">Context (optional)</label>
+                    <input type="text" id="context-input" name="context"
+                           placeholder="e.g. From my HLTH 2026 keynote">
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" id="submit-btn" class="btn-primary">
+                    Create Clips
+                </button>
+            </form>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progress-section" class="card" hidden>
+            <h2>Processing your video...</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div id="progress-log" class="progress-log"></div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" hidden>
+            <!-- Summary -->
+            <div class="card" id="summary-card">
+                <h2 id="result-title"></h2>
+                <p id="result-summary"></p>
+                <div id="result-themes" class="tags"></div>
+                <a id="download-all-btn" class="btn-secondary" href="#" download>
+                    Download All (ZIP)
+                </a>
+            </div>
+
+            <!-- Clips -->
+            <div id="clips-container"></div>
+        </section>
+
+        <!-- Error Section -->
+        <section id="error-section" class="card error-card" hidden>
+            <h2>Something went wrong</h2>
+            <p id="error-message"></p>
+            <button onclick="resetUI()" class="btn-secondary">Try Again</button>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/nav-badge.js"></script>
+</body>
+</html>

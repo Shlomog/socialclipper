@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library — SocialClipper</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <style>
+        .library-container {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        .empty-state svg { margin-bottom: 16px; opacity: 0.4; }
+        .empty-state p { margin-top: 8px; }
+        .empty-state a {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .empty-state a:hover { text-decoration: underline; }
+
+        /* Video sub-menu (tabs) */
+        .video-tabs {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            -webkit-overflow-scrolling: touch;
+        }
+        .video-tab {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .video-tab:hover { color: var(--text); }
+        .video-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+        .video-tab .tab-count {
+            display: inline-block;
+            background: rgba(107, 114, 128, 0.12);
+            color: var(--text-light);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+        .video-tab.active .tab-count {
+            background: rgba(79, 70, 229, 0.12);
+            color: var(--primary);
+        }
+
+        /* Run card */
+        .run-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .run-header {
+            padding: 24px 28px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .run-header:hover { background: rgba(79, 70, 229, 0.02); }
+        .run-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .run-header h2 .chevron {
+            transition: transform 0.2s;
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+        .run-header h2 .chevron.open { transform: rotate(90deg); }
+        .run-date {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        .run-summary {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .run-stats {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .run-stat {
+            font-size: 13px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .run-stat strong { color: var(--text); }
+
+        /* Clips section inside run */
+        .run-clips {
+            padding: 0 28px 24px;
+            display: none;
+        }
+        .run-clips.open { display: block; }
+        .run-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 0 0 20px;
+        }
+
+        /* Library clip card */
+        .lib-clip {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .lib-clip:last-child { margin-bottom: 0; }
+        .lib-clip h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .lib-clip .clip-meta { margin-bottom: 12px; }
+        .lib-clip video {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #000;
+        }
+
+        /* Download row */
+        .run-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 28px 20px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-light);
+        }
+        .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Edit button */
+        .btn-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.08);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-edit:hover { background: rgba(79, 70, 229, 0.15); }
+
+        /* ======= EDIT MODAL ======= */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px;
+        }
+        .modal h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .modal-subtitle {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--text); }
+
+        /* Video preview with crop overlay */
+        .edit-video-wrap {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .edit-video-wrap video {
+            width: 100%;
+            display: block;
+        }
+        .crop-overlay-left, .crop-overlay-right {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.55);
+            pointer-events: none;
+            transition: left 0.1s, right 0.1s, width 0.1s;
+        }
+        .crop-overlay-left { left: 0; }
+        .crop-overlay-right { right: 0; }
+
+        /* Aspect ratio picker */
+        .aspect-section { margin-bottom: 20px; }
+        .aspect-section label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .aspect-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .aspect-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .aspect-btn:hover { border-color: var(--text-light); }
+        .aspect-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.08);
+        }
+        .aspect-icon {
+            display: inline-block;
+            border: 2px solid currentColor;
+            border-radius: 2px;
+        }
+        .aspect-icon.landscape { width: 22px; height: 14px; }
+        .aspect-icon.square { width: 16px; height: 16px; }
+        .aspect-icon.portrait { width: 12px; height: 20px; }
+
+        /* Timeline trimmer */
+        .timeline-section { margin-bottom: 20px; }
+        .timeline-section label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .timeline-track {
+            position: relative;
+            height: 40px;
+            background: var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .timeline-fill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: rgba(79, 70, 229, 0.25);
+            border-radius: 6px;
+        }
+        .timeline-handle {
+            position: absolute;
+            top: -4px;
+            width: 14px;
+            height: 48px;
+            background: var(--primary);
+            border-radius: 4px;
+            cursor: ew-resize;
+            z-index: 2;
+        }
+        .timeline-handle::after {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 16px;
+            border-left: 2px solid rgba(255,255,255,0.6);
+            border-right: 2px solid rgba(255,255,255,0.6);
+        }
+        .timeline-playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--error);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text);
+            margin-top: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+        .time-labels span { min-width: 60px; }
+        .time-labels .duration {
+            color: var(--text-light);
+            text-align: center;
+            flex: 1;
+        }
+
+        /* Crop slider */
+        .crop-section { margin-bottom: 24px; }
+        .crop-section label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .crop-slider {
+            width: 100%;
+            accent-color: var(--primary);
+        }
+        .crop-hint {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* Modal actions */
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+        .btn-save {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .btn-save:hover { opacity: 0.9; }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-cancel {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-cancel:hover { color: var(--text); }
+
+        /* Archive X button */
+        .btn-archive {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(107, 114, 128, 0.08);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.15s;
+            z-index: 1;
+        }
+        .btn-archive:hover {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--error);
+        }
+        .run-card { position: relative; }
+
+        /* Archived section */
+        .archived-section {
+            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+        }
+        .archived-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .archived-toggle:hover { color: var(--text); }
+        .archived-toggle .arrow {
+            transition: transform 0.2s;
+            font-size: 12px;
+        }
+        .archived-toggle .arrow.open { transform: rotate(90deg); }
+        .archived-list { margin-top: 12px; }
+        .archived-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .archived-item-info {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .archived-item-info .name { font-weight: 600; color: var(--text); }
+        .archived-item-info .meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .btn-unarchive {
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.08);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+        .btn-unarchive:hover { background: rgba(79, 70, 229, 0.15); }
+
+        @media (max-width: 600px) {
+            .library-container { padding: 20px 16px 60px; }
+            .run-header { padding: 20px; }
+            .run-clips { padding: 0 20px 20px; }
+            .run-actions { padding: 0 20px 16px; }
+            .video-tab { padding: 8px 14px; font-size: 13px; }
+            .modal { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="library-container">
+        <!-- Header -->
+        <header>
+            <h1>SocialClipper</h1>
+            <nav class="nav" id="main-nav">
+                <a href="/">Create</a>
+                <a href="/processing">Processing</a>
+                <a href="/library" class="active">Library</a>
+            </nav>
+        </header>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading library...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="empty-state" hidden>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M7 4v16M17 4v16M3 8h4M3 12h18M3 16h4M17 8h4M17 12h4M17 16h4M7 8h10"/>
+            </svg>
+            <h2>No clips yet</h2>
+            <p>Process your first video to see results here.</p>
+            <a href="/">Create Clips →</a>
+        </div>
+
+        <!-- Video sub-menu -->
+        <div id="video-tabs" class="video-tabs" hidden></div>
+
+        <!-- Results list -->
+        <div id="results-list"></div>
+
+        <!-- Archived section -->
+        <div id="archived-section" class="archived-section" hidden>
+            <button class="archived-toggle" onclick="toggleArchived()">
+                <span class="arrow" id="archived-arrow">&#9654;</span>
+                Archived <span id="archived-count"></span>
+            </button>
+            <div id="archived-list" class="archived-list" hidden></div>
+        </div>
+    </div>
+
+    <!-- ======= EDIT MODAL ======= -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            <h2 id="edit-title">Edit Clip</h2>
+            <p class="modal-subtitle" id="edit-subtitle"></p>
+
+            <!-- Video with crop overlay -->
+            <div class="edit-video-wrap" id="edit-video-wrap">
+                <video id="edit-video" preload="metadata"></video>
+                <div class="crop-overlay-left" id="crop-left"></div>
+                <div class="crop-overlay-right" id="crop-right"></div>
+            </div>
+
+            <!-- Aspect ratio picker -->
+            <div class="aspect-section">
+                <label>Aspect Ratio</label>
+                <div class="aspect-buttons" id="aspect-buttons">
+                    <button class="aspect-btn" data-ratio="16:9" onclick="setAspectRatio('16:9', this)">
+                        <span class="aspect-icon landscape"></span>
+                        16:9
+                    </button>
+                    <button class="aspect-btn" data-ratio="1:1" onclick="setAspectRatio('1:1', this)">
+                        <span class="aspect-icon square"></span>
+                        1:1
+                    </button>
+                    <button class="aspect-btn" data-ratio="9:16" onclick="setAspectRatio('9:16', this)">
+                        <span class="aspect-icon portrait"></span>
+                        9:16
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timeline trimmer -->
+            <div class="timeline-section">
+                <label>Trim</label>
+                <div class="timeline-track" id="timeline-track">
+                    <div class="timeline-fill" id="timeline-fill"></div>
+                    <div class="timeline-handle" id="handle-start"></div>
+                    <div class="timeline-handle" id="handle-end"></div>
+                    <div class="timeline-playhead" id="playhead"></div>
+                </div>
+                <div class="time-labels">
+                    <span id="label-start">0:00</span>
+                    <span class="duration" id="label-duration">0s</span>
+                    <span id="label-end" style="text-align:right">0:00</span>
+                </div>
+            </div>
+
+            <!-- Crop position slider (only visible when aspect ratios differ) -->
+            <div class="crop-section" id="crop-section" hidden>
+                <label>Crop Position</label>
+                <input type="range" class="crop-slider" id="crop-slider" min="0" max="100" value="50">
+                <p class="crop-hint">Slide to choose which part of the frame to keep. The shaded areas will be cropped out.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-save" id="btn-preview" onclick="previewEdit()">Preview</button>
+                <button class="btn-save" id="btn-save" onclick="saveEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    // Library Page — Grouped by Source Video
+    // ============================================================
+
+    const loadingEl = document.getElementById("loading");
+    const emptyEl = document.getElementById("empty-state");
+    const tabsEl = document.getElementById("video-tabs");
+    const listEl = document.getElementById("results-list");
+
+    let allResults = [];
+    let grouped = {};
+    let activeTab = "all";
+
+    fetchLibrary();
+
+    async function fetchLibrary() {
+        try {
+            const res = await fetch("/api/library");
+            const data = await res.json();
+            loadingEl.hidden = true;
+
+            if (!data.results || data.results.length === 0) {
+                emptyEl.hidden = false;
+                return;
+            }
+
+            allResults = data.results;
+            grouped = groupByVideo(allResults);
+            renderTabs(grouped);
+            renderResults(allResults);
+        } catch (err) {
+            loadingEl.innerHTML = `<p style="color:var(--error)">Failed to load library. Is the server running?</p>`;
+        }
+    }
+
+    // Group results by source_name
+    function groupByVideo(results) {
+        const groups = {};
+        results.forEach(run => {
+            const name = run.source_name || run.folder;
+            if (!groups[name]) groups[name] = [];
+            groups[name].push(run);
+        });
+        return groups;
+    }
+
+    // Render the sub-menu tabs
+    function renderTabs(groups) {
+        const names = Object.keys(groups);
+        // Only show tabs if there's more than one video
+        if (names.length <= 1) {
+            tabsEl.hidden = true;
+            return;
+        }
+
+        tabsEl.hidden = false;
+        tabsEl.innerHTML = "";
+
+        // "All" tab
+        const allTab = document.createElement("button");
+        allTab.className = "video-tab active";
+        allTab.innerHTML = `All <span class="tab-count">${allResults.length}</span>`;
+        allTab.onclick = () => selectTab("all", allTab);
+        tabsEl.appendChild(allTab);
+
+        // Per-video tabs
+        names.forEach(name => {
+            const tab = document.createElement("button");
+            tab.className = "video-tab";
+            const count = groups[name].length;
+            tab.innerHTML = `${esc(name)} <span class="tab-count">${count}</span>`;
+            tab.title = name;
+            tab.onclick = () => selectTab(name, tab);
+            tabsEl.appendChild(tab);
+        });
+    }
+
+    function selectTab(name, tabEl) {
+        activeTab = name;
+
+        // Update active state
+        tabsEl.querySelectorAll(".video-tab").forEach(t => t.classList.remove("active"));
+        tabEl.classList.add("active");
+
+        // Filter and render
+        const filtered = name === "all" ? allResults : (grouped[name] || []);
+        renderResults(filtered);
+    }
+
+    function renderResults(results) {
+        listEl.innerHTML = "";
+
+        results.forEach((run, runIndex) => {
+            const card = document.createElement("div");
+            card.className = "run-card";
+
+            const dateStr = formatFolderDate(run.folder);
+
+            const themeTags = (run.key_themes || [])
+                .map(t => `<span class="tag">${esc(t)}</span>`)
+                .join("");
+
+            // Show source name in header when "All" tab
+            const headerTitle = run.summary
+                ? run.summary.substring(0, 80) + (run.summary.length > 80 ? '...' : '')
+                : run.source_name || run.folder;
+
+            card.innerHTML = `
+                <button class="btn-archive" onclick="event.stopPropagation(); archiveRun('${escJs(run.folder)}')" title="Archive this run">&times;</button>
+                <div class="run-header" onclick="toggleRun(this)">
+                    <h2>
+                        <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                        ${esc(headerTitle)}
+                    </h2>
+                    <p class="run-date">${dateStr}${activeTab === "all" && run.source_name ? ` &middot; ${esc(run.source_name)}` : ''}</p>
+                    ${run.summary ? `<p class="run-summary">${esc(run.summary)}</p>` : ''}
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>${run.clip_count}</strong> clip${run.clip_count !== 1 ? 's' : ''}</span>
+                        ${themeTags ? `<span class="run-stat">${themeTags}</span>` : ''}
+                    </div>
+                </div>
+                <div class="run-clips" id="run-clips-${runIndex}">
+                    <hr class="run-divider">
+                    ${renderClips(run.drafts, run.folder, run.has_source, run.source_duration)}
+                </div>
+                <div class="run-actions" id="run-actions-${runIndex}" style="display:none">
+                    <a class="btn-secondary" href="/api/library/${encodeURIComponent(run.folder)}/download" download>
+                        Download All (ZIP)
+                    </a>
+                </div>
+            `;
+
+            // Auto-expand first result
+            if (runIndex === 0) {
+                setTimeout(() => {
+                    const header = card.querySelector('.run-header');
+                    toggleRun(header);
+                }, 100);
+            }
+
+            listEl.appendChild(card);
+        });
+    }
+
+    // Cache-bust param to force reload after edits
+    const cacheBust = Date.now();
+
+    function renderClips(drafts, folder, hasSource, sourceDuration) {
+        if (!drafts || drafts.length === 0) {
+            return '<p style="color:var(--text-light);font-size:14px;">No clips found in this run.</p>';
+        }
+
+        return drafts.map(clip => {
+            const clipUrl = `/api/library/${encodeURIComponent(folder)}/clip/${clip.video_file}?t=${cacheBust}`;
+            const videoHtml = clip.video_file
+                ? `<video controls preload="metadata">
+                     <source src="${clipUrl}" type="video/mp4">
+                   </video>`
+                : '';
+
+            const platformName = clip.platform === 'instagram-reel' ? 'Instagram Reel' : 'LinkedIn';
+
+            const editBtn = hasSource
+                ? `<button class="btn-edit" onclick="openEditModal('${escJs(folder)}', ${clip.index}, '${escJs(clip.platform)}', ${clip.start_time}, ${clip.end_time}, ${sourceDuration || 0}, '${escJs(clip.title)}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit Clip
+                   </button>`
+                : '';
+
+            return `
+                <div class="lib-clip">
+                    <h3>${esc(clip.title)}</h3>
+                    <div class="clip-meta">
+                        <span class="tag platform">${esc(platformName)}</span>
+                        ${clip.content_type ? `<span class="tag">${esc(clip.content_type)}</span>` : ''}
+                        ${clip.brand_pillar ? `<span class="tag pillar">${esc(clip.brand_pillar)}</span>` : ''}
+                    </div>
+                    ${videoHtml}
+                    <div class="draft-box" id="draft-${folder}-${clip.index}">${esc(clip.transcript_excerpt || '')}</div>
+                    <div class="clip-actions">
+                        ${editBtn}
+                        <button class="btn-copy" onclick="copyText(this)">
+                            Copy Excerpt
+                        </button>
+                        ${clip.video_file ? `<a class="btn-download-clip" href="/api/library/${encodeURIComponent(folder)}/clip/${clip.video_file}" download="${clip.video_file}">
+                            Download Clip
+                        </a>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    // Toggle run expansion
+    function toggleRun(headerEl) {
+        const card = headerEl.closest('.run-card');
+        const clipsEl = card.querySelector('.run-clips');
+        const actionsEl = card.querySelector('.run-actions');
+        const chevron = headerEl.querySelector('.chevron');
+        const isOpen = clipsEl.classList.contains('open');
+
+        if (isOpen) {
+            clipsEl.classList.remove('open');
+            actionsEl.style.display = 'none';
+            chevron.classList.remove('open');
+        } else {
+            clipsEl.classList.add('open');
+            actionsEl.style.display = 'flex';
+            chevron.classList.add('open');
+
+            // Load full drafts when expanded
+            const folder = card.querySelector('.run-actions a').href.split('/library/')[1].split('/download')[0];
+            loadDrafts(decodeURIComponent(folder), card);
+        }
+    }
+
+    // Load full drafts text
+    async function loadDrafts(folder, card) {
+        if (card.dataset.draftsLoaded) return;
+        card.dataset.draftsLoaded = "true";
+
+        try {
+            const res = await fetch(`/api/library/${encodeURIComponent(folder)}/drafts`);
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const draftSections = parseDraftsMd(data.content);
+
+            const draftBoxes = card.querySelectorAll('.draft-box');
+            draftBoxes.forEach((box, i) => {
+                if (draftSections[i]) {
+                    box.textContent = draftSections[i];
+                    const copyBtn = box.nextElementSibling?.querySelector('.btn-copy');
+                    if (copyBtn) {
+                        copyBtn.textContent = "Copy Draft";
+                    }
+                }
+            });
+        } catch (err) {
+            console.error("Failed to load drafts:", err);
+        }
+    }
+
+    // Parse drafts.md into individual draft texts
+    function parseDraftsMd(content) {
+        const sections = [];
+        const parts = content.split(/^## Clip \d+:/m);
+
+        for (let i = 1; i < parts.length; i++) {
+            const part = parts[i];
+            const draftMatch = part.match(/### Draft Post\s*\n([\s\S]*?)(?=\n---|\n## |$)/);
+            if (draftMatch) {
+                sections.push(draftMatch[1].trim());
+            } else {
+                const fallbackMatch = part.match(/\*\*Draft:\*\*\s*\n([\s\S]*?)(?=\n---|\n## |$)/);
+                if (fallbackMatch) {
+                    sections.push(fallbackMatch[1].trim());
+                } else {
+                    const lines = part.trim().split('\n');
+                    const contentLines = [];
+                    let pastMeta = false;
+                    for (const line of lines) {
+                        if (pastMeta) {
+                            contentLines.push(line);
+                        } else if (line.startsWith('### Draft') || line.startsWith('**Draft')) {
+                            pastMeta = true;
+                        }
+                    }
+                    sections.push(contentLines.join('\n').trim() || part.trim());
+                }
+            }
+        }
+        return sections;
+    }
+
+    // Copy text
+    function copyText(btn) {
+        const draftBox = btn.closest('.lib-clip').querySelector('.draft-box');
+        const text = draftBox.textContent;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const original = btn.textContent;
+            btn.textContent = "Copied!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.classList.remove("copied");
+            }, 2000);
+        });
+    }
+
+    // Format folder name into readable date
+    function formatFolderDate(folder) {
+        const match = folder.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})_/);
+        if (!match) return folder;
+
+        const [, y, m, d, hh, mm] = match;
+        const date = new Date(y, m - 1, d, hh, mm);
+        return date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        });
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // Escape for use inside single-quoted JS strings in onclick attributes
+    function escJs(str) {
+        if (!str) return '';
+        return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // ============================================================
+    // Edit Modal — Trim + Crop
+    // ============================================================
+    const editModal = document.getElementById("edit-modal");
+    const editVideo = document.getElementById("edit-video");
+    const editTitle = document.getElementById("edit-title");
+    const editSubtitle = document.getElementById("edit-subtitle");
+    const timelineTrack = document.getElementById("timeline-track");
+    const timelineFill = document.getElementById("timeline-fill");
+    const handleStart = document.getElementById("handle-start");
+    const handleEnd = document.getElementById("handle-end");
+    const playheadEl = document.getElementById("playhead");
+    const labelStart = document.getElementById("label-start");
+    const labelEnd = document.getElementById("label-end");
+    const labelDuration = document.getElementById("label-duration");
+    const cropSection = document.getElementById("crop-section");
+    const cropSlider = document.getElementById("crop-slider");
+    const cropLeft = document.getElementById("crop-left");
+    const cropRight = document.getElementById("crop-right");
+    const btnSave = document.getElementById("btn-save");
+
+    let editState = {
+        folder: null,
+        clipIndex: null,
+        platform: null,
+        aspectRatio: null,    // current selected ratio e.g. "16:9", "1:1", "9:16"
+        originalRatio: null,  // clip's original platform ratio
+        totalDuration: 0,
+        trimStart: 0,
+        trimEnd: 0,
+        cropPos: 0.5,
+        needsCrop: false,
+        dragging: null,
+    };
+
+    function openEditModal(folder, clipIndex, platform, startTime, endTime, sourceDuration, title) {
+        editState.folder = folder;
+        editState.clipIndex = clipIndex;
+        editState.platform = platform;
+        editState.totalDuration = sourceDuration;
+        editState.trimStart = startTime;
+        editState.trimEnd = endTime;
+        editState.cropPos = 0.5;
+
+        // Set initial aspect ratio from platform
+        const initialRatio = platform === 'instagram-reel' ? '9:16' : '16:9';
+        editState.aspectRatio = initialRatio;
+        editState.originalRatio = initialRatio;
+
+        editTitle.textContent = `Edit: ${title}`;
+        editSubtitle.textContent = `Drag handles to trim, pick aspect ratio, slide to position the crop`;
+
+        // Highlight the correct aspect ratio button
+        document.querySelectorAll('.aspect-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.ratio === initialRatio);
+        });
+
+        // Load source video
+        editVideo.src = `/api/library/${encodeURIComponent(folder)}/source`;
+        editVideo.load();
+
+        editVideo.onloadedmetadata = () => {
+            if (editState.totalDuration === 0 || !editState.totalDuration) {
+                editState.totalDuration = editVideo.duration;
+            }
+            updateCropState();
+
+            // Seek to trim start
+            editVideo.currentTime = editState.trimStart;
+            updateTimeline();
+        };
+
+        editModal.classList.add("open");
+        document.body.style.overflow = "hidden";
+        btnSave.disabled = false;
+        btnSave.textContent = "Save";
+    }
+
+    function setAspectRatio(ratio, btn) {
+        editState.aspectRatio = ratio;
+        document.querySelectorAll('.aspect-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateCropState();
+    }
+
+    function updateCropState() {
+        const vw = editVideo.videoWidth;
+        const vh = editVideo.videoHeight;
+        if (!vw || !vh) return;
+
+        const sourceRatio = vw / vh;
+        const [tw, th] = editState.aspectRatio.split(':').map(Number);
+        const targetRatio = tw / th;
+
+        // Need crop if source and target ratios differ significantly
+        const ratioDiff = Math.abs(sourceRatio - targetRatio) / targetRatio;
+        editState.needsCrop = ratioDiff > 0.1;
+
+        if (editState.needsCrop) {
+            cropSection.hidden = false;
+            cropSlider.value = editState.cropPos * 100;
+            updateCropOverlay();
+        } else {
+            cropSection.hidden = true;
+            cropLeft.style.width = "0";
+            cropLeft.style.height = "0";
+            cropRight.style.width = "0";
+            cropRight.style.height = "0";
+        }
+    }
+
+    function closeEditModal() {
+        editModal.classList.remove("open");
+        document.body.style.overflow = "";
+        editVideo.pause();
+        editVideo.src = "";
+    }
+
+    // Click overlay to close
+    editModal.addEventListener("click", (e) => {
+        if (e.target === editModal) closeEditModal();
+    });
+
+    // --- Timeline drag ---
+    function getTimeFromX(clientX) {
+        const rect = timelineTrack.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        return pct * editState.totalDuration;
+    }
+
+    handleStart.addEventListener("mousedown", (e) => { e.preventDefault(); editState.dragging = "start"; });
+    handleEnd.addEventListener("mousedown", (e) => { e.preventDefault(); editState.dragging = "end"; });
+    handleStart.addEventListener("touchstart", (e) => { editState.dragging = "start"; }, { passive: true });
+    handleEnd.addEventListener("touchstart", (e) => { editState.dragging = "end"; }, { passive: true });
+
+    document.addEventListener("mousemove", onDragMove);
+    document.addEventListener("touchmove", onDragMove, { passive: false });
+    document.addEventListener("mouseup", () => { editState.dragging = null; });
+    document.addEventListener("touchend", () => { editState.dragging = null; });
+
+    function onDragMove(e) {
+        if (!editState.dragging) return;
+        if (e.touches) e.preventDefault();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const t = getTimeFromX(clientX);
+
+        if (editState.dragging === "start") {
+            editState.trimStart = Math.max(0, Math.min(t, editState.trimEnd - 1));
+            editVideo.currentTime = editState.trimStart;
+        } else {
+            editState.trimEnd = Math.min(editState.totalDuration, Math.max(t, editState.trimStart + 1));
+            editVideo.currentTime = editState.trimEnd;
+        }
+        updateTimeline();
+    }
+
+    // Click on timeline to seek
+    timelineTrack.addEventListener("click", (e) => {
+        if (editState.dragging) return;
+        const t = getTimeFromX(e.clientX);
+        editVideo.currentTime = t;
+    });
+
+    // Update playhead during playback
+    editVideo.addEventListener("timeupdate", () => {
+        if (editState.totalDuration <= 0) return;
+        const pct = (editVideo.currentTime / editState.totalDuration) * 100;
+        playheadEl.style.left = `${pct}%`;
+
+        // Stop at trim end during preview
+        if (editVideo.currentTime >= editState.trimEnd && !editVideo.paused) {
+            editVideo.pause();
+        }
+    });
+
+    function updateTimeline() {
+        const dur = editState.totalDuration;
+        if (dur <= 0) return;
+
+        const startPct = (editState.trimStart / dur) * 100;
+        const endPct = (editState.trimEnd / dur) * 100;
+
+        handleStart.style.left = `calc(${startPct}% - 7px)`;
+        handleEnd.style.left = `calc(${endPct}% - 7px)`;
+        timelineFill.style.left = `${startPct}%`;
+        timelineFill.style.width = `${endPct - startPct}%`;
+
+        labelStart.textContent = fmtTime(editState.trimStart);
+        labelEnd.textContent = fmtTime(editState.trimEnd);
+        const clipDur = editState.trimEnd - editState.trimStart;
+        labelDuration.textContent = `${clipDur.toFixed(1)}s`;
+    }
+
+    function fmtTime(sec) {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // --- Crop overlay ---
+    cropSlider.addEventListener("input", () => {
+        editState.cropPos = cropSlider.value / 100;
+        updateCropOverlay();
+    });
+
+    function updateCropOverlay() {
+        if (!editState.needsCrop) return;
+
+        const vw = editVideo.videoWidth;
+        const vh = editVideo.videoHeight;
+        if (!vw || !vh) return;
+
+        const [tw, th] = editState.aspectRatio.split(':').map(Number);
+        const targetRatio = tw / th;
+        const sourceRatio = vw / vh;
+
+        // Reset overlay styles
+        cropLeft.style.width = "0";
+        cropLeft.style.height = "";
+        cropLeft.style.top = "0";
+        cropLeft.style.bottom = "0";
+        cropRight.style.width = "0";
+        cropRight.style.height = "";
+        cropRight.style.top = "0";
+        cropRight.style.bottom = "0";
+
+        if (sourceRatio > targetRatio) {
+            // Source is wider than target: crop sides (e.g. 16:9 source → 9:16 or 1:1)
+            const keepPct = (vh * targetRatio) / vw;
+            const cropTotal = 1 - keepPct;
+            const leftCrop = cropTotal * editState.cropPos;
+            const rightCrop = cropTotal * (1 - editState.cropPos);
+            cropLeft.style.width = `${leftCrop * 100}%`;
+            cropRight.style.width = `${rightCrop * 100}%`;
+        } else if (sourceRatio < targetRatio) {
+            // Source is taller than target: crop top/bottom
+            const keepPct = (vw / targetRatio) / vh;
+            const cropTotal = 1 - keepPct;
+            const topCrop = cropTotal * editState.cropPos;
+            const bottomCrop = cropTotal * (1 - editState.cropPos);
+            cropLeft.style.width = "100%";
+            cropLeft.style.height = `${topCrop * 100}%`;
+            cropLeft.style.bottom = "auto";
+            cropRight.style.width = "100%";
+            cropRight.style.height = `${bottomCrop * 100}%`;
+            cropRight.style.top = "auto";
+        }
+    }
+
+    // --- Preview ---
+    function previewEdit() {
+        editVideo.currentTime = editState.trimStart;
+        editVideo.play();
+    }
+
+    // --- Save ---
+    async function saveEdit() {
+        btnSave.disabled = true;
+        btnSave.textContent = "Saving...";
+
+        const body = {
+            start_time: editState.trimStart,
+            end_time: editState.trimEnd,
+        };
+        if (editState.needsCrop) {
+            body.crop_position = editState.cropPos;
+        }
+        // Send aspect ratio if changed from original
+        if (editState.aspectRatio !== editState.originalRatio) {
+            body.aspect_ratio = editState.aspectRatio;
+        }
+
+        try {
+            const res = await fetch(
+                `/api/library/${encodeURIComponent(editState.folder)}/edit/${editState.clipIndex}`,
+                { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+            );
+            const data = await res.json();
+            if (data.ok) {
+                closeEditModal();
+                // Reload library to show updated clip
+                location.reload();
+            } else {
+                alert("Error: " + (data.error || "Unknown error"));
+                btnSave.disabled = false;
+                btnSave.textContent = "Save";
+            }
+        } catch (err) {
+            alert("Failed to save: " + err.message);
+            btnSave.disabled = false;
+            btnSave.textContent = "Save";
+        }
+    }
+
+    // ============================================================
+    // Archive — hide old runs without deleting files
+    // ============================================================
+    const archivedSection = document.getElementById("archived-section");
+    const archivedArrow = document.getElementById("archived-arrow");
+    const archivedCountEl = document.getElementById("archived-count");
+    const archivedListEl = document.getElementById("archived-list");
+    let archivedOpen = false;
+    let archivedItems = [];
+
+    // Fetch archived list on page load
+    fetchArchived();
+
+    async function fetchArchived() {
+        try {
+            const res = await fetch("/api/library/archived");
+            const data = await res.json();
+            archivedItems = data.results || [];
+            if (archivedItems.length > 0) {
+                archivedSection.hidden = false;
+                archivedCountEl.textContent = `(${archivedItems.length})`;
+                if (archivedOpen) renderArchived();
+            } else {
+                archivedSection.hidden = true;
+            }
+        } catch (err) {
+            console.error("Failed to fetch archived:", err);
+        }
+    }
+
+    function toggleArchived() {
+        archivedOpen = !archivedOpen;
+        archivedArrow.classList.toggle("open", archivedOpen);
+        archivedListEl.hidden = !archivedOpen;
+        if (archivedOpen) renderArchived();
+    }
+
+    function renderArchived() {
+        archivedListEl.innerHTML = "";
+        archivedItems.forEach(item => {
+            const dateStr = formatFolderDate(item.folder);
+            const el = document.createElement("div");
+            el.className = "archived-item";
+            el.innerHTML = `
+                <div class="archived-item-info">
+                    <div class="name">${esc(item.source_name)}</div>
+                    <div class="meta">${dateStr} &middot; ${item.clip_count} clip${item.clip_count !== 1 ? 's' : ''}</div>
+                </div>
+                <button class="btn-unarchive" onclick="unarchiveRun('${escJs(item.folder)}')">Restore</button>
+            `;
+            archivedListEl.appendChild(el);
+        });
+    }
+
+    async function archiveRun(folder) {
+        try {
+            const res = await fetch(`/api/library/${encodeURIComponent(folder)}/archive`, { method: "POST" });
+            const data = await res.json();
+            if (data.ok) {
+                // Remove card from DOM with a fade
+                const cards = listEl.querySelectorAll('.run-card');
+                cards.forEach(card => {
+                    const archiveBtn = card.querySelector('.btn-archive');
+                    if (archiveBtn && archiveBtn.getAttribute('onclick').includes(folder)) {
+                        card.style.transition = 'opacity 0.3s, transform 0.3s';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.95)';
+                        setTimeout(() => card.remove(), 300);
+                    }
+                });
+
+                // Re-fetch both lists
+                setTimeout(async () => {
+                    await fetchArchived();
+                    // Also update allResults
+                    const libRes = await fetch("/api/library");
+                    const libData = await libRes.json();
+                    allResults = libData.results || [];
+                    grouped = groupByVideo(allResults);
+                    renderTabs(grouped);
+
+                    if (allResults.length === 0) {
+                        emptyEl.hidden = false;
+                        tabsEl.hidden = true;
+                    }
+                }, 350);
+            }
+        } catch (err) {
+            console.error("Failed to archive:", err);
+        }
+    }
+
+    async function unarchiveRun(folder) {
+        try {
+            const res = await fetch(`/api/library/${encodeURIComponent(folder)}/unarchive`, { method: "POST" });
+            const data = await res.json();
+            if (data.ok) {
+                // Re-fetch everything
+                await fetchArchived();
+                const libRes = await fetch("/api/library");
+                const libData = await libRes.json();
+                allResults = libData.results || [];
+                grouped = groupByVideo(allResults);
+                emptyEl.hidden = allResults.length > 0;
+                renderTabs(grouped);
+                const filtered = activeTab === "all" ? allResults : (grouped[activeTab] || allResults);
+                renderResults(filtered);
+            }
+        } catch (err) {
+            console.error("Failed to unarchive:", err);
+        }
+    }
+    </script>
+    <script src="/static/nav-badge.js"></script>
+</body>
+</html>

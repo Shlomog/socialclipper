@@ -1,0 +1,377 @@
+/* ============================================================
+   SocialClipper — Clean, minimal design
+   ============================================================ */
+
+:root {
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --bg: #F9FAFB;
+    --card-bg: #FFFFFF;
+    --text: #111827;
+    --text-light: #6B7280;
+    --border: #E5E7EB;
+    --success: #059669;
+    --error: #DC2626;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+header .subtitle {
+    color: var(--text-light);
+    font-size: 16px;
+    margin-top: 4px;
+}
+
+/* Nav */
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 4px;
+}
+.nav a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 6px 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+}
+.nav a:hover { color: var(--primary); }
+.nav a.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* Cards */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+/* Input Group */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.input-group input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 16px;
+    color: var(--text);
+    transition: border-color 0.15s;
+}
+
+.input-group input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    margin-bottom: 20px;
+}
+
+.upload-area:hover, .upload-area.dragover {
+    border-color: var(--primary);
+    background: rgba(79, 70, 229, 0.03);
+}
+
+.upload-area.has-file {
+    border-color: var(--success);
+    background: rgba(5, 150, 105, 0.03);
+}
+
+.upload-icon {
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+.upload-area p {
+    color: var(--text-light);
+    font-size: 15px;
+}
+
+.upload-hint {
+    font-size: 13px !important;
+    margin-top: 4px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--success) !important;
+    margin-top: 8px;
+}
+
+/* Buttons */
+.btn-primary {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 8px;
+}
+
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-secondary:hover { background: var(--border); }
+
+.btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-copy:hover { background: var(--primary-hover); }
+.btn-copy.copied {
+    background: var(--success);
+}
+
+.btn-download-clip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-download-clip:hover {
+    background: rgba(79, 70, 229, 0.05);
+}
+
+/* Progress */
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.progress-log {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.8;
+}
+
+.progress-log p {
+    padding: 2px 0;
+}
+
+.progress-log p:last-child {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Tags */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(79, 70, 229, 0.08);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.tag.platform {
+    background: rgba(5, 150, 105, 0.08);
+    color: var(--success);
+}
+
+.tag.pillar {
+    background: rgba(217, 119, 6, 0.08);
+    color: #B45309;
+}
+
+/* Clip Card */
+.clip-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 20px;
+}
+
+.clip-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.clip-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.clip-video {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    background: #000;
+}
+
+.draft-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+}
+
+.clip-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Error */
+.error-card {
+    border-left: 4px solid var(--error);
+}
+
+.error-card h2 { color: var(--error); }
+
+#error-message {
+    margin: 12px 0;
+    color: var(--text-light);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container { padding: 20px 16px 60px; }
+    .card { padding: 24px 20px; }
+    header h1 { font-size: 24px; }
+}

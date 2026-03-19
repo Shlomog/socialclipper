@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing — SocialClipper</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <style>
+        .processing-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        .empty-state svg { margin-bottom: 16px; opacity: 0.4; }
+        .empty-state p { margin-top: 8px; }
+        .empty-state a {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .empty-state a:hover { text-decoration: underline; }
+
+        /* Job card */
+        .job-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+        .job-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+        .job-source {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .status-badge.running {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+        .status-badge.running::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .status-badge.queued {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+        .status-badge.done {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+        }
+        .status-badge.error {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--error);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Progress in job card */
+        .job-progress-bar {
+            width: 100%;
+            height: 5px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .job-progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .job-progress-fill.complete {
+            background: var(--success);
+        }
+
+        .job-log {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.7;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .job-log p { padding: 1px 0; }
+        .job-log p:last-child {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-light);
+        }
+        .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            .processing-container { padding: 20px 16px 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="processing-container">
+        <!-- Header -->
+        <header>
+            <h1>SocialClipper</h1>
+            <nav class="nav" id="main-nav">
+                <a href="/">Create</a>
+                <a href="/processing" class="active">Processing</a>
+                <a href="/library">Library</a>
+            </nav>
+        </header>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Checking jobs...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="empty-state" hidden>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <h2>Nothing processing</h2>
+            <p>No videos are being processed right now.</p>
+            <a href="/">Create Clips →</a>
+        </div>
+
+        <!-- Jobs list -->
+        <div id="jobs-list"></div>
+    </div>
+
+    <script>
+    // ============================================================
+    // Processing Page — Live Job Tracker
+    // ============================================================
+
+    const loadingEl = document.getElementById("loading");
+    const emptyEl = document.getElementById("empty-state");
+    const listEl = document.getElementById("jobs-list");
+
+    let pollInterval = null;
+    let previousJobs = {};
+
+    // Start polling
+    fetchJobs();
+    pollInterval = setInterval(fetchJobs, 2000);
+
+    async function fetchJobs() {
+        try {
+            const res = await fetch("/api/jobs");
+            const data = await res.json();
+            loadingEl.hidden = true;
+
+            const jobIds = Object.keys(data);
+            if (jobIds.length === 0) {
+                emptyEl.hidden = false;
+                listEl.innerHTML = "";
+                updateNavBadge(false);
+                return;
+            }
+
+            emptyEl.hidden = true;
+            renderJobs(data);
+
+            // Check if any jobs are still active
+            const hasActive = jobIds.some(id =>
+                data[id].status === "running" || data[id].status === "queued"
+            );
+            updateNavBadge(hasActive);
+
+            // Stop polling if all jobs are done/error
+            if (!hasActive && pollInterval) {
+                // Keep polling a bit slower for new jobs
+                clearInterval(pollInterval);
+                pollInterval = setInterval(fetchJobs, 5000);
+            }
+
+            previousJobs = data;
+        } catch (err) {
+            loadingEl.innerHTML = `<p style="color:var(--error)">Cannot connect to server.</p>`;
+        }
+    }
+
+    function renderJobs(jobs) {
+        const jobIds = Object.keys(jobs);
+
+        // Sort: running first, then queued, then done, then error
+        const order = { running: 0, queued: 1, done: 2, error: 3 };
+        jobIds.sort((a, b) => (order[jobs[a].status] || 9) - (order[jobs[b].status] || 9));
+
+        listEl.innerHTML = "";
+
+        jobIds.forEach(jobId => {
+            const job = jobs[jobId];
+            const card = document.createElement("div");
+            card.className = "job-card";
+
+            // Extract video title from job data, progress messages, or result
+            const source = job.source || "Unknown";
+            let videoTitle = "";
+
+            // 1. Use source_name resolved by the server (best — available as soon as job starts)
+            if (job.source_name) {
+                videoTitle = job.source_name;
+            }
+            // 2. Try to get title from result (completed jobs)
+            if (!videoTitle && job.result && job.result.source_name) {
+                videoTitle = job.result.source_name;
+            }
+            // 3. Try to get from "Downloaded: filename" progress message
+            if (!videoTitle) {
+                const dlMsg = job.progress.find(m => m.startsWith("Downloaded: "));
+                if (dlMsg) {
+                    videoTitle = dlMsg.replace("Downloaded: ", "").replace(/\.\w+$/, "");
+                    if (videoTitle === "source_video") videoTitle = "";
+                }
+            }
+            // 4. Fallback: show shortened URL or filename
+            if (!videoTitle) {
+                if (source.includes("youtube.com") || source.includes("youtu.be")) {
+                    videoTitle = "Resolving title...";
+                } else if (source.includes("http")) {
+                    videoTitle = "Video";
+                } else {
+                    videoTitle = source.split("/").pop().replace(/\.\w+$/, "");
+                }
+            }
+
+            // Progress percentage
+            let percent = 0;
+            const lastStepMsg = [...job.progress].reverse().find(m => m.match(/Step (\d)\/6/));
+            if (lastStepMsg) {
+                const match = lastStepMsg.match(/Step (\d)\/6/);
+                if (match) percent = (parseInt(match[1]) / 6) * 100;
+            }
+            if (job.status === "done") percent = 100;
+
+            // Status badge text
+            const statusLabels = {
+                queued: "Queued",
+                running: "Processing",
+                done: "Complete",
+                error: "Failed",
+            };
+
+            // Build log lines (show last 10)
+            const recentLogs = job.progress.slice(-10);
+            const logHtml = recentLogs.map(m => `<p>${esc(m)}</p>`).join("");
+
+            card.innerHTML = `
+                <span class="status-badge ${job.status}">${statusLabels[job.status] || job.status}</span>
+                <h3>${esc(videoTitle)}</h3>
+                <p class="job-source" title="${esc(source)}">${esc(source)}</p>
+                <div class="job-progress-bar">
+                    <div class="job-progress-fill ${job.status === 'done' ? 'complete' : ''}" style="width: ${percent}%"></div>
+                </div>
+                <div class="job-log">${logHtml || '<p>Waiting to start...</p>'}</div>
+                ${job.status === "done" && job.result ? `
+                    <div class="job-actions">
+                        <a class="btn-secondary" href="/library">View in Library →</a>
+                    </div>
+                ` : ""}
+                ${job.status === "error" ? `
+                    <div class="job-actions">
+                        <a class="btn-secondary" href="/">Try Again</a>
+                    </div>
+                ` : ""}
+            `;
+
+            listEl.appendChild(card);
+        });
+    }
+
+    function updateNavBadge(hasActive) {
+        const navLink = document.querySelector('.nav a[href="/processing"]');
+        if (!navLink) return;
+
+        if (hasActive) {
+            navLink.innerHTML = 'Processing <span style="display:inline-block;width:8px;height:8px;background:var(--primary);border-radius:50%;animation:pulse 1.5s ease-in-out infinite;margin-left:4px;vertical-align:middle;"></span>';
+        } else {
+            navLink.textContent = "Processing";
+        }
+    }
+
+    function esc(str) {
+        if (!str) return "";
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
+    }
+    </script>
+</body>
+</html>
