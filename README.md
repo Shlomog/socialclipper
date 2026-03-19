@@ -10,7 +10,9 @@ AI-powered video-to-social-clips pipeline. Drop in a video (or paste a YouTube U
 
 ## Screenshots
 
-<!-- Add screenshots of the UI here -->
+![Create page — paste a URL or upload a video](docs/screenshot-create.png)
+
+![Processing page — real-time progress tracking](docs/screenshot-processing.png)
 
 ## Requirements
 
