@@ -205,6 +205,50 @@
         }
         .btn-edit:hover { background: rgba(79, 70, 229, 0.15); }
 
+        /* Editable draft textarea */
+        .draft-editable {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+            font-family: inherit;
+            width: 100%;
+            resize: vertical;
+            transition: border-color 0.15s;
+            max-height: none;
+            overflow-y: auto;
+        }
+        .draft-editable:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .draft-editable.modified {
+            border-color: #D97706;
+        }
+
+        .btn-save-draft {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #D97706;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-save-draft:hover { background: #B45309; }
+        .btn-save-draft.saved { background: var(--success); }
+
         /* ======= EDIT MODAL ======= */
         .modal-overlay {
             display: none;
@@ -535,11 +579,19 @@
     <div class="library-container">
         <!-- Header -->
         <header>
-            <h1>SocialClipper</h1>
+            <h1><a href="/welcome" style="color: var(--primary); text-decoration: none;">SocialClipper</a></h1>
             <nav class="nav" id="main-nav">
-                <a href="/">Create</a>
-                <a href="/processing">Processing</a>
-                <a href="/library" class="active">Library</a>
+                <div class="nav-item"><a href="/welcome" class="nav-link">Home</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/settings" class="nav-link start-here"><span class="nav-number">1</span> Settings <span class="start-badge">Start</span></a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/voice" class="nav-link"><span class="nav-number">2</span> Voice</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/create" class="nav-link"><span class="nav-number">3</span> Create</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/processing" class="nav-link"><span class="nav-number">4</span> Processing</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/library" class="nav-link active"><span class="nav-number">5</span> Library</a></div>
             </nav>
         </header>
 
@@ -556,7 +608,7 @@
             </svg>
             <h2>No clips yet</h2>
             <p>Process your first video to see results here.</p>
-            <a href="/">Create Clips →</a>
+            <a href="/create">Create Clips →</a>
         </div>
 
         <!-- Video sub-menu -->
@@ -821,9 +873,20 @@
                         ${clip.brand_pillar ? `<span class="tag pillar">${esc(clip.brand_pillar)}</span>` : ''}
                     </div>
                     ${videoHtml}
-                    <div class="draft-box" id="draft-${folder}-${clip.index}">${esc(clip.transcript_excerpt || '')}</div>
+                    <textarea class="draft-box draft-editable" id="draft-${folder}-${clip.index}" data-folder="${escAttr(folder)}" data-clip-index="${clip.index}" rows="10" oninput="onDraftEdit(this)">${esc(clip.transcript_excerpt || '')}</textarea>
                     <div class="clip-actions">
                         ${editBtn}
+                        <button class="btn-save-draft" id="save-draft-${folder}-${clip.index}" onclick="saveDraft(this)" hidden>
+                            Save Draft
+                        </button>
+                        <button class="btn-edit" onclick="regenerateDraft(this, '${escJs(folder)}', ${clip.index})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6"/><path d="M21.34 15.57a10 10 0 1 1-.57-8.38"/></svg>
+                            Regenerate
+                        </button>
+                        <button class="btn-edit" onclick="makeShorter(this, '${escJs(folder)}', ${clip.index})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+                            Make Shorter
+                        </button>
                         <button class="btn-copy" onclick="copyText(this)">
                             Copy Excerpt
                         </button>
@@ -871,11 +934,13 @@
 
             const draftSections = parseDraftsMd(data.content);
 
-            const draftBoxes = card.querySelectorAll('.draft-box');
+            const draftBoxes = card.querySelectorAll('.draft-editable');
             draftBoxes.forEach((box, i) => {
                 if (draftSections[i]) {
-                    box.textContent = draftSections[i];
-                    const copyBtn = box.nextElementSibling?.querySelector('.btn-copy');
+                    box.value = draftSections[i];
+                    box.dataset.originalText = draftSections[i];
+                    box.classList.remove("modified");
+                    const copyBtn = box.closest('.lib-clip').querySelector('.btn-copy');
                     if (copyBtn) {
                         copyBtn.textContent = "Copy Draft";
                     }
@@ -918,10 +983,139 @@
         return sections;
     }
 
+    // Track original draft text for change detection
+    function onDraftEdit(textarea) {
+        const original = textarea.dataset.originalText || "";
+        const modified = textarea.value !== original;
+        textarea.classList.toggle("modified", modified);
+        const saveBtn = textarea.closest('.lib-clip').querySelector('.btn-save-draft');
+        if (saveBtn) saveBtn.hidden = !modified;
+    }
+
+    // Save edited draft
+    async function saveDraft(btn) {
+        const clip = btn.closest('.lib-clip');
+        const textarea = clip.querySelector('.draft-editable');
+        const folder = textarea.dataset.folder;
+        const clipIndex = textarea.dataset.clipIndex;
+
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+            const res = await fetch(`/api/library/${encodeURIComponent(folder)}/drafts/${clipIndex}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: textarea.value }),
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                textarea.dataset.originalText = textarea.value;
+                textarea.classList.remove("modified");
+                btn.textContent = "Saved!";
+                btn.classList.add("saved");
+                setTimeout(() => {
+                    btn.textContent = "Save Draft";
+                    btn.classList.remove("saved");
+                    btn.hidden = true;
+                }, 2000);
+            } else {
+                btn.textContent = "Error";
+                setTimeout(() => { btn.textContent = "Save Draft"; }, 2000);
+            }
+        } catch {
+            btn.textContent = "Error";
+            setTimeout(() => { btn.textContent = "Save Draft"; }, 2000);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // Regenerate a draft via Claude
+    async function regenerateDraft(btn, folder, clipIndex) {
+        const clip = btn.closest('.lib-clip');
+        const textarea = clip.querySelector('.draft-editable');
+        const originalBtnText = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.textContent = "Regenerating...";
+
+        try {
+            const res = await fetch(`/api/library/${encodeURIComponent(folder)}/regenerate/${clipIndex}`, {
+                method: "POST",
+            });
+            const data = await res.json();
+
+            if (data.ok && data.draft_text) {
+                textarea.value = data.draft_text;
+                textarea.dataset.originalText = "";
+                textarea.classList.add("modified");
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
+                // Show save button so user can persist
+                const saveBtn = clip.querySelector('.btn-save-draft');
+                if (saveBtn) saveBtn.hidden = false;
+                btn.innerHTML = "Done!";
+                setTimeout(() => { btn.innerHTML = originalBtnText; }, 2000);
+            } else {
+                btn.textContent = data.error || "Error";
+                setTimeout(() => { btn.innerHTML = originalBtnText; }, 3000);
+            }
+        } catch {
+            btn.textContent = "Error";
+            setTimeout(() => { btn.innerHTML = originalBtnText; }, 3000);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // Make a draft shorter via Claude
+    async function makeShorter(btn, folder, clipIndex) {
+        const clip = btn.closest('.lib-clip');
+        const textarea = clip.querySelector('.draft-editable');
+        const currentText = textarea.value.trim();
+        const originalBtnText = btn.innerHTML;
+
+        if (!currentText) return;
+
+        btn.disabled = true;
+        btn.textContent = "Shortening...";
+
+        try {
+            const res = await fetch(`/api/library/${encodeURIComponent(folder)}/shorten/${clipIndex}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: currentText }),
+            });
+            const data = await res.json();
+
+            if (data.ok && data.draft_text) {
+                textarea.value = data.draft_text;
+                textarea.dataset.originalText = "";
+                textarea.classList.add("modified");
+                textarea.style.height = "auto";
+                textarea.style.height = textarea.scrollHeight + "px";
+                const saveBtn = clip.querySelector('.btn-save-draft');
+                if (saveBtn) saveBtn.hidden = false;
+                btn.innerHTML = "Done!";
+                setTimeout(() => { btn.innerHTML = originalBtnText; }, 2000);
+            } else {
+                btn.textContent = data.error || "Error";
+                setTimeout(() => { btn.innerHTML = originalBtnText; }, 3000);
+            }
+        } catch {
+            btn.textContent = "Error";
+            setTimeout(() => { btn.innerHTML = originalBtnText; }, 3000);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
     // Copy text
     function copyText(btn) {
-        const draftBox = btn.closest('.lib-clip').querySelector('.draft-box');
-        const text = draftBox.textContent;
+        const draftBox = btn.closest('.lib-clip').querySelector('.draft-editable');
+        const text = draftBox.value;
 
         navigator.clipboard.writeText(text).then(() => {
             const original = btn.textContent;
@@ -962,6 +1156,12 @@
     function escJs(str) {
         if (!str) return '';
         return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // Escape for use in HTML attributes
+    function escAttr(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;');
     }
 
     // ============================================================
@@ -1371,6 +1571,7 @@
         }
     }
     </script>
+    <script src="/static/theme.js"></script>
     <script src="/static/nav-badge.js"></script>
 </body>
 </html>

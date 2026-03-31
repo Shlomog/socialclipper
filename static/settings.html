@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings — SocialClipper</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <style>
+        .settings-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        .settings-intro {
+            color: var(--text-light);
+            font-size: 15px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .key-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .key-status.configured {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+        }
+        .key-status.missing {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--error);
+        }
+
+        .key-input-group {
+            margin-bottom: 16px;
+        }
+
+        .key-input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .key-input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .key-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: monospace;
+            color: var(--text);
+            transition: border-color 0.15s;
+        }
+        .key-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-save-key {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .btn-save-key:hover { background: var(--primary-hover); }
+        .btn-save-key:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-save-key.saved { background: var(--success); }
+
+        .key-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-remove {
+            padding: 10px 18px;
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-remove:hover {
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .key-help {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-light);
+        }
+
+        .key-help a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .key-help a:hover { text-decoration: underline; }
+
+        .key-help ol {
+            margin: 8px 0 0 20px;
+        }
+        .key-help li {
+            margin-bottom: 4px;
+        }
+
+        .save-feedback {
+            font-size: 13px;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+        .save-feedback.success { color: var(--success); }
+        .save-feedback.error { color: var(--error); }
+
+        .source-note {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        .cost-table th {
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            padding: 10px 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .cost-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-light);
+        }
+        .cost-table tr:last-child td {
+            border-bottom: none;
+        }
+        .cost-price {
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .cost-note {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .settings-container { padding: 20px 16px 60px; }
+            .key-input-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <!-- Header -->
+        <header>
+            <h1><a href="/welcome" style="color: var(--primary); text-decoration: none;">SocialClipper</a></h1>
+            <nav class="nav" id="main-nav">
+                <div class="nav-item"><a href="/welcome" class="nav-link">Home</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/settings" class="nav-link active start-here"><span class="nav-number">1</span> Settings <span class="start-badge">Start</span></a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/voice" class="nav-link"><span class="nav-number">2</span> Voice</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/create" class="nav-link"><span class="nav-number">3</span> Create</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/processing" class="nav-link"><span class="nav-number">4</span> Processing</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/library" class="nav-link"><span class="nav-number">5</span> Library</a></div>
+            </nav>
+        </header>
+
+        <div class="card">
+            <h2>Anthropic API Key</h2>
+            <span id="key-status" class="key-status missing">Not configured</span>
+
+            <p class="settings-intro">
+                SocialClipper uses Claude AI to analyze your video transcript and write
+                social media drafts. The API key is <strong>only</strong> used for this
+                processing. Transcription and video editing happen locally on your machine.
+                No video or audio data is ever sent to the API.
+            </p>
+
+            <div class="key-input-group">
+                <label for="api-key-input">API Key</label>
+                <div class="key-input-row">
+                    <input type="password" id="api-key-input" class="key-input"
+                           placeholder="sk-ant-api03-..."
+                           autocomplete="off" spellcheck="false">
+                    <button id="save-key-btn" class="btn-save-key" onclick="saveKey()">Save</button>
+                </div>
+            </div>
+
+            <div class="key-actions" id="key-actions" hidden>
+                <button class="btn-remove" onclick="removeKey()">Remove Saved Key</button>
+                <span id="source-note" class="source-note"></span>
+            </div>
+
+            <p id="key-feedback" class="save-feedback"></p>
+
+            <div class="key-help">
+                <strong>How to get an API key:</strong>
+                <ol>
+                    <li>Go to <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a></li>
+                    <li>Sign up or log in</li>
+                    <li>Go to API Keys and create a new key</li>
+                    <li>Copy the key and paste it above</li>
+                </ol>
+                Your key is stored locally on this machine and never shared.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Estimated Cost per Video</h2>
+            <p class="settings-intro">
+                Only the text analysis uses the API (finding clip moments + writing drafts).
+                Transcription runs locally for free. Here's what to expect:
+            </p>
+
+            <table class="cost-table">
+                <thead>
+                    <tr>
+                        <th>Video Length</th>
+                        <th>What's Sent</th>
+                        <th>Typical Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>10 minutes</td>
+                        <td>~2,000 word transcript</td>
+                        <td class="cost-price">~$0.05</td>
+                    </tr>
+                    <tr>
+                        <td>30 minutes</td>
+                        <td>~6,000 word transcript</td>
+                        <td class="cost-price">~$0.10</td>
+                    </tr>
+                    <tr>
+                        <td>60 minutes</td>
+                        <td>~12,000 word transcript</td>
+                        <td class="cost-price">~$0.15</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="cost-note">
+                Estimates based on Claude Sonnet pricing ($3/M input, $15/M output tokens)
+                with 4 clips per run. Actual cost varies by transcript length and number of clips.
+                You can monitor your usage at
+                <a href="https://console.anthropic.com/settings/usage" target="_blank" rel="noopener" style="color: var(--primary); text-decoration: none; font-weight: 600;">console.anthropic.com</a>.
+            </p>
+        </div>
+    </div>
+
+    <script src="/static/theme.js"></script>
+    <script src="/static/nav-badge.js"></script>
+    <script>
+    const keyInput = document.getElementById("api-key-input");
+    const statusEl = document.getElementById("key-status");
+    const saveBtn = document.getElementById("save-key-btn");
+    const feedbackEl = document.getElementById("key-feedback");
+    const actionsEl = document.getElementById("key-actions");
+    const sourceNote = document.getElementById("source-note");
+
+    // Restore draft from localStorage
+    const savedDraft = localStorage.getItem("sc-apikey-draft");
+    if (savedDraft) keyInput.value = savedDraft;
+
+    // Auto-save to localStorage on input
+    keyInput.addEventListener("input", () => {
+        localStorage.setItem("sc-apikey-draft", keyInput.value);
+    });
+
+    // Load current status
+    checkKeyStatus();
+
+    async function checkKeyStatus() {
+        try {
+            const res = await fetch("/api/settings/api-key");
+            const data = await res.json();
+            if (data.configured) {
+                statusEl.textContent = "Configured";
+                statusEl.className = "key-status configured";
+                keyInput.placeholder = data.masked_key;
+                actionsEl.hidden = false;
+                if (data.source === "env") {
+                    sourceNote.textContent = "Using key from ANTHROPIC_API_KEY environment variable";
+                } else {
+                    sourceNote.textContent = "Using saved key";
+                }
+            } else {
+                statusEl.textContent = "Not configured";
+                statusEl.className = "key-status missing";
+                keyInput.placeholder = "sk-ant-api03-...";
+                actionsEl.hidden = true;
+            }
+        } catch {
+            statusEl.textContent = "Cannot connect";
+            statusEl.className = "key-status missing";
+        }
+    }
+
+    async function saveKey() {
+        const key = keyInput.value.trim();
+        if (!key) {
+            showFeedback("Please enter your API key.", "error");
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        try {
+            const res = await fetch("/api/settings/api-key", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key }),
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                keyInput.value = "";
+                localStorage.removeItem("sc-apikey-draft");
+                saveBtn.textContent = "Saved!";
+                saveBtn.classList.add("saved");
+                showFeedback("API key saved. You're ready to create clips!", "success");
+                checkKeyStatus();
+                setTimeout(() => {
+                    saveBtn.textContent = "Save";
+                    saveBtn.classList.remove("saved");
+                }, 2000);
+            } else {
+                showFeedback(data.error || "Failed to save.", "error");
+            }
+        } catch {
+            showFeedback("Failed to save. Is the server running?", "error");
+        } finally {
+            saveBtn.disabled = false;
+        }
+    }
+
+    async function removeKey() {
+        if (!confirm("Remove the saved API key? If ANTHROPIC_API_KEY is set in your environment, that will still be used.")) {
+            return;
+        }
+
+        try {
+            await fetch("/api/settings/api-key", { method: "DELETE" });
+            keyInput.value = "";
+            showFeedback("Saved key removed.", "success");
+            checkKeyStatus();
+        } catch {
+            showFeedback("Failed to remove.", "error");
+        }
+    }
+
+    function showFeedback(msg, type) {
+        feedbackEl.textContent = msg;
+        feedbackEl.className = "save-feedback " + type;
+        setTimeout(() => { feedbackEl.textContent = ""; }, 5000);
+    }
+    </script>
+</body>
+</html>

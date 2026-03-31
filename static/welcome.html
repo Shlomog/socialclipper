@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialClipper</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <style>
+        .welcome-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 20px 0 32px;
+        }
+
+        .hero h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: var(--text-light);
+            line-height: 1.6;
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        /* How it works steps */
+        .how-it-works {
+            margin: 8px 0 32px;
+        }
+
+        .how-it-works h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step-list li:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* What you need */
+        .requirements {
+            margin: 0 0 8px;
+        }
+
+        .requirements h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .req-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .req-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .req-check {
+            color: var(--success);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .req-item.needed {
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            background: rgba(79, 70, 229, 0.03);
+        }
+
+        .req-item .req-label {
+            font-weight: 500;
+        }
+
+        .req-item .req-note {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* CTA */
+        .cta-section {
+            text-align: center;
+            padding: 32px 0 8px;
+        }
+
+        .btn-get-started {
+            display: inline-block;
+            padding: 16px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .btn-get-started:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .cta-note {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 12px;
+        }
+
+        /* Privacy callout */
+        .privacy-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 20px;
+            background: rgba(5, 150, 105, 0.05);
+            border: 1px solid rgba(5, 150, 105, 0.15);
+            border-radius: 8px;
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .privacy-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        @media (max-width: 600px) {
+            .welcome-container { padding: 20px 16px 60px; }
+            .req-grid { grid-template-columns: 1fr; }
+            .hero h2 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <!-- Header -->
+        <header>
+            <h1><a href="/welcome" style="color: var(--primary); text-decoration: none;">SocialClipper</a></h1>
+            <nav class="nav" id="main-nav">
+                <div class="nav-item"><a href="/welcome" class="nav-link active">Home</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/settings" class="nav-link start-here"><span class="nav-number">1</span> Settings <span class="start-badge">Start</span></a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/voice" class="nav-link"><span class="nav-number">2</span> Voice</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/create" class="nav-link"><span class="nav-number">3</span> Create</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/processing" class="nav-link"><span class="nav-number">4</span> Processing</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/library" class="nav-link"><span class="nav-number">5</span> Library</a></div>
+            </nav>
+        </header>
+
+        <!-- Hero -->
+        <div class="hero">
+            <h2>Turn your videos into<br>ready-to-post social content</h2>
+            <p>
+                Drop in a video or paste a link. SocialClipper finds the best moments,
+                cuts the clips, and writes the posts. You review, tweak, and publish.
+            </p>
+        </div>
+
+        <!-- How it works -->
+        <div class="card how-it-works">
+            <h3>How it works</h3>
+
+            <ol class="step-list">
+                <li>
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <h4>You drop in a video</h4>
+                        <p>Upload a file or paste a YouTube link. Add optional context like "from my SXSW talk" to help the AI understand what it's watching.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <h4>We transcribe it locally</h4>
+                        <p>Your video is transcribed right on your Mac using Whisper. Nothing leaves your machine at this step.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <h4>AI finds the best moments</h4>
+                        <p>Claude reads the transcript and picks the most clip-worthy moments based on your voice strategy: the stories, insights, and hooks that represent you best.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <h4>Clips get cut, posts get drafted</h4>
+                        <p>Each moment becomes a video clip (formatted for LinkedIn or Instagram) with a publish-ready social post written in your voice.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-number">5</span>
+                    <div class="step-content">
+                        <h4>You review and publish</h4>
+                        <p>Browse your clips in the Library, trim them if needed, copy the drafts, and post. You're always in control of the final result.</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- What you need -->
+        <div class="card requirements">
+            <h3>What you'll need</h3>
+            <div class="req-grid">
+                <div class="req-item">
+                    <span class="req-check">&#10003;</span>
+                    <div>
+                        <div class="req-label">Mac with Apple Silicon</div>
+                        <div class="req-note">M1, M2, M3, or M4</div>
+                    </div>
+                </div>
+                <div class="req-item needed">
+                    <span class="req-check" style="color: var(--primary);">&#8250;</span>
+                    <div>
+                        <div class="req-label">Anthropic API key</div>
+                        <div class="req-note">Set up in the next step</div>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <span class="req-check">&#10003;</span>
+                    <div>
+                        <div class="req-label">A video to clip</div>
+                        <div class="req-note">File or YouTube link</div>
+                    </div>
+                </div>
+                <div class="req-item">
+                    <span class="req-check">&#10003;</span>
+                    <div>
+                        <div class="req-label">5 minutes</div>
+                        <div class="req-note">One-time setup</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="privacy-note">
+                <span class="privacy-icon">&#128274;</span>
+                <span>
+                    <strong>Your content stays private.</strong>
+                    Video and audio are processed entirely on your Mac.
+                    Only the text transcript is sent to the AI for analysis.
+                    Nothing is stored on external servers.
+                </span>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <a href="/settings" class="btn-get-started">Get Started</a>
+            <p class="cta-note">Takes about 5 minutes to set up. Free to try.</p>
+        </div>
+    </div>
+
+    <script src="/static/theme.js"></script>
+    <script src="/static/nav-badge.js"></script>
+</body>
+</html>

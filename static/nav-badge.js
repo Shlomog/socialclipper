@@ -15,7 +15,7 @@
                     id => data[id].status === "running" || data[id].status === "queued"
                 );
 
-                const navLink = document.querySelector('.nav a[href="/processing"]');
+                const navLink = document.querySelector('.nav a.nav-link[href="/processing"]');
                 if (!navLink) return;
 
                 if (hasActive) {

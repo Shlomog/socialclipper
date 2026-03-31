@@ -11,13 +11,31 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <h1>SocialClipper</h1>
+            <h1><a href="/welcome" style="color: var(--primary); text-decoration: none;">SocialClipper</a></h1>
             <nav class="nav" id="main-nav">
-                <a href="/" class="active">Create</a>
-                <a href="/processing">Processing</a>
-                <a href="/library">Library</a>
+                <div class="nav-item"><a href="/welcome" class="nav-link">Home</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/settings" class="nav-link start-here"><span class="nav-number">1</span> Settings <span class="start-badge">Start</span></a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/voice" class="nav-link"><span class="nav-number">2</span> Voice</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/create" class="nav-link active"><span class="nav-number">3</span> Create</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/processing" class="nav-link"><span class="nav-number">4</span> Processing</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/library" class="nav-link"><span class="nav-number">5</span> Library</a></div>
             </nav>
         </header>
+
+        <!-- API key banner (shown if not configured) -->
+        <div id="api-key-banner" class="voice-banner" style="border-color: rgba(220, 38, 38, 0.3); background: rgba(220, 38, 38, 0.05);" hidden>
+            <p>No API key configured. <a href="/settings" style="color: var(--error);">Add your Anthropic API key</a> in Settings before creating clips.</p>
+        </div>
+
+        <!-- Voice strategy banner (shown if not configured) -->
+        <div id="voice-banner" class="voice-banner" hidden>
+            <p>No voice strategy set up yet. <a href="/voice">Set up your voice</a> so we know what to look for in your videos.</p>
+        </div>
 
         <!-- Input Section -->
         <section id="input-section" class="card">
@@ -52,6 +70,17 @@
                     <label for="context-input">Context (optional)</label>
                     <input type="text" id="context-input" name="context"
                            placeholder="e.g. From my HLTH 2026 keynote">
+                </div>
+
+                <!-- Options -->
+                <div class="input-group" style="margin-bottom: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                        <input type="checkbox" id="subtitles-input" name="subtitles" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                        Burn subtitles onto clips
+                    </label>
+                    <p style="font-size: 12px; color: var(--text-light); margin-top: 4px; margin-left: 26px;">
+                        Adds captions from the transcript directly on the video
+                    </p>
                 </div>
 
                 <!-- Submit -->
@@ -95,6 +124,20 @@
     </div>
 
     <script src="/static/app.js"></script>
+    <script src="/static/theme.js"></script>
     <script src="/static/nav-badge.js"></script>
+    <script>
+    // Check if API key and voice strategy are configured
+    fetch("/api/settings/api-key").then(r => r.json()).then(data => {
+        if (!data.configured) {
+            document.getElementById("api-key-banner").hidden = false;
+        }
+    }).catch(() => {});
+    fetch("/api/voice").then(r => r.json()).then(data => {
+        if (data.is_default) {
+            document.getElementById("voice-banner").hidden = false;
+        }
+    }).catch(() => {});
+    </script>
 </body>
 </html>

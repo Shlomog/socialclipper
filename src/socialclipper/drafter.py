@@ -1,8 +1,6 @@
 """Generate social media drafts using Claude."""
 
-import anthropic
-
-from .config import CLAUDE_MODEL, PLATFORM_SPECS, VOICE_SYSTEM_PROMPT
+from .config import CLAUDE_MODEL, PLATFORM_SPECS, VOICE_SYSTEM_PROMPT, get_anthropic_client, load_voice_strategy
 
 
 def generate_drafts(
@@ -17,8 +15,16 @@ def generate_drafts(
     if on_progress:
         on_progress("Writing social media drafts...")
 
-    client = anthropic.Anthropic()
+    client = get_anthropic_client()
     drafts = []
+
+    voice_strategy = load_voice_strategy()
+    system_prompt = VOICE_SYSTEM_PROMPT
+    if voice_strategy:
+        system_prompt += (
+            "\n\nSPEAKER'S VOICE STRATEGY (use this to guide tone, framing, "
+            "and what to emphasize in the draft):\n" + voice_strategy
+        )
 
     for i, clip in enumerate(analysis["clips"]):
         if on_progress:
@@ -51,7 +57,7 @@ Just the publish-ready text followed by hashtags on a new line."""
         response = client.messages.create(
             model=CLAUDE_MODEL,
             max_tokens=1024,
-            system=VOICE_SYSTEM_PROMPT,
+            system=system_prompt,
             messages=[{"role": "user", "content": user_message}],
         )
 

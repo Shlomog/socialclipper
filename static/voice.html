@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Strategy — SocialClipper</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <style>
+        .voice-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        .voice-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .voice-status.custom {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+        }
+        .voice-status.default {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-light);
+        }
+
+        .voice-intro {
+            color: var(--text-light);
+            font-size: 15px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .voice-textarea {
+            width: 100%;
+            min-height: 220px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            line-height: 1.7;
+            color: var(--text);
+            resize: vertical;
+            transition: border-color 0.15s;
+        }
+        .voice-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .voice-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn-save {
+            padding: 12px 28px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-save:hover { background: var(--primary-hover); }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-save.saved {
+            background: var(--success);
+        }
+
+        .btn-reset {
+            padding: 12px 20px;
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-reset:hover {
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .option-label {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .prompt-box {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            padding-right: 80px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+
+        .btn-copy-prompt {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-copy-prompt:hover { background: var(--primary-hover); }
+        .btn-copy-prompt.copied { background: var(--success); }
+
+        .save-feedback {
+            font-size: 13px;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+        .save-feedback.success { color: var(--success); }
+        .save-feedback.error { color: var(--error); }
+
+        @media (max-width: 600px) {
+            .voice-container { padding: 20px 16px 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="voice-container">
+        <!-- Header -->
+        <header>
+            <h1><a href="/welcome" style="color: var(--primary); text-decoration: none;">SocialClipper</a></h1>
+            <nav class="nav" id="main-nav">
+                <div class="nav-item"><a href="/welcome" class="nav-link">Home</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/settings" class="nav-link start-here"><span class="nav-number">1</span> Settings <span class="start-badge">Start</span></a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/voice" class="nav-link active"><span class="nav-number">2</span> Voice</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/create" class="nav-link"><span class="nav-number">3</span> Create</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/processing" class="nav-link"><span class="nav-number">4</span> Processing</a></div>
+                <span class="nav-arrow">&#8250;</span>
+                <div class="nav-item"><a href="/library" class="nav-link"><span class="nav-number">5</span> Library</a></div>
+            </nav>
+        </header>
+
+        <!-- Intro -->
+        <div class="card">
+            <h2>Your Voice Strategy</h2>
+            <span id="voice-status" class="voice-status default">Using default</span>
+
+            <p class="voice-intro">
+                Let's figure out what makes your content <em>yours</em>.
+                Your voice strategy tells us which moments to pick from your videos
+                and how to frame your social posts. Without it, we're guessing.
+                With it, every clip sounds like you.
+            </p>
+            <p class="voice-intro" style="margin-bottom: 0;">
+                Pick whichever path is easiest:
+            </p>
+        </div>
+
+        <!-- Option 1: LinkedIn -->
+        <div class="card">
+            <h3 class="option-label">Option 1: Generate from your LinkedIn</h3>
+            <p class="voice-intro">
+                Paste your LinkedIn headline, About section, and a few posts you're proud of.
+                We'll analyze how you communicate and build a voice strategy that matches.
+            </p>
+
+            <textarea id="linkedin-textarea" class="voice-textarea" style="min-height: 140px;"
+                      placeholder="Paste your LinkedIn content here...&#10;&#10;For best results, include:&#10;- Your headline&#10;- Your About section&#10;- 2-3 posts that represent your voice well"></textarea>
+
+            <div class="voice-actions" style="margin-top: 12px;">
+                <button id="generate-btn" class="btn-save" onclick="generateFromLinkedIn()">Generate Strategy</button>
+            </div>
+            <p id="generate-feedback" class="save-feedback"></p>
+        </div>
+
+        <!-- Option 2: Paste your own -->
+        <div class="card">
+            <h3 class="option-label">Option 2: Paste your own strategy</h3>
+            <p class="voice-intro">
+                Already have a brand voice doc, content brief, or writing guidelines?
+                Drop it right in. If you generated a strategy from LinkedIn above,
+                it'll appear here for you to review and tweak before saving.
+            </p>
+
+            <textarea id="voice-textarea" class="voice-textarea"
+                      placeholder="Example:&#10;&#10;I'm a healthcare CEO focused on health-tech innovation. My audience is health-tech founders and hospital administrators.&#10;&#10;Prioritize moments where I:&#10;- Share firsthand experience running a hospital system&#10;- Bridge clinical practice with technology&#10;- Talk about patient-first thinking&#10;&#10;Avoid: generic startup advice, buzzwords, anything that sounds like a sales pitch."></textarea>
+
+            <div class="voice-actions">
+                <button id="save-btn" class="btn-save" onclick="saveStrategy()">Save Strategy</button>
+                <button id="reset-btn" class="btn-reset" onclick="resetStrategy()">Reset to Default</button>
+            </div>
+            <p id="save-feedback" class="save-feedback"></p>
+        </div>
+
+        <!-- Option 3: AI prompt -->
+        <div class="card">
+            <h3 class="option-label">Option 3: Use any AI to help you write one</h3>
+            <p class="voice-intro">
+                Not sure where to start? Copy this prompt into ChatGPT, Claude, or any AI you like.
+                It'll walk you through a short conversation about your brand, then output a
+                strategy you can paste into Option 2 above.
+            </p>
+
+            <div class="prompt-box" id="prompt-box">I need to create a voice strategy for a social media clipping tool that analyzes my videos and picks the best moments to turn into social posts.
+
+Help me define my voice strategy by asking me about:
+
+1. Who I am — my role, expertise, and background
+2. My target audience — who I'm trying to reach
+3. My key topics — the 3-5 themes I always want to talk about
+4. My unique angle — what makes my perspective different
+5. What to prioritize — the kinds of moments that represent me best
+6. What to avoid — topics, tones, or framings that don't fit my brand
+
+After our conversation, output a concise voice strategy document (under 300 words) that I can paste into my tool. It should be written as direct instructions, like:
+"Prioritize moments where the speaker..."
+"Avoid content that..."
+"The audience cares about..."<button class="btn-copy-prompt" id="copy-prompt-btn" onclick="copyPrompt()">Copy</button></div>
+        </div>
+    </div>
+
+    <script src="/static/theme.js"></script>
+    <script src="/static/nav-badge.js"></script>
+    <script>
+    const textarea = document.getElementById("voice-textarea");
+    const linkedinTextarea = document.getElementById("linkedin-textarea");
+    const statusEl = document.getElementById("voice-status");
+    const saveBtn = document.getElementById("save-btn");
+    const feedbackEl = document.getElementById("save-feedback");
+
+    let isDefault = true;
+
+    // Auto-save drafts to localStorage on every keystroke
+    textarea.addEventListener("input", () => {
+        localStorage.setItem("sc-voice-draft", textarea.value);
+    });
+    linkedinTextarea.addEventListener("input", () => {
+        localStorage.setItem("sc-linkedin-draft", linkedinTextarea.value);
+    });
+
+    // Restore LinkedIn draft immediately (not overwritten by server)
+    const linkedinDraft = localStorage.getItem("sc-linkedin-draft");
+    if (linkedinDraft) linkedinTextarea.value = linkedinDraft;
+
+    // Load current strategy, then restore voice draft if no saved strategy
+    fetch("/api/voice")
+        .then(r => r.json())
+        .then(data => {
+            isDefault = data.is_default;
+            if (!isDefault) {
+                textarea.value = data.strategy;
+            } else {
+                // Restore unsaved draft if no saved strategy exists
+                const draft = localStorage.getItem("sc-voice-draft");
+                if (draft) textarea.value = draft;
+            }
+            updateStatus();
+        })
+        .catch(() => {});
+
+    function updateStatus() {
+        if (isDefault) {
+            statusEl.textContent = "Using default";
+            statusEl.className = "voice-status default";
+        } else {
+            statusEl.textContent = "Custom strategy active";
+            statusEl.className = "voice-status custom";
+        }
+    }
+
+    async function saveStrategy() {
+        const text = textarea.value.trim();
+        if (!text) {
+            showFeedback("Please enter your voice strategy.", "error");
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        try {
+            const res = await fetch("/api/voice", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ strategy: text }),
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                isDefault = false;
+                updateStatus();
+                localStorage.removeItem("sc-voice-draft");
+                localStorage.removeItem("sc-linkedin-draft");
+                saveBtn.textContent = "Saved!";
+                saveBtn.classList.add("saved");
+                showFeedback("Voice strategy saved. It will be used for all future clips.", "success");
+                setTimeout(() => {
+                    saveBtn.textContent = "Save";
+                    saveBtn.classList.remove("saved");
+                }, 2000);
+            } else {
+                showFeedback(data.error || "Failed to save.", "error");
+            }
+        } catch {
+            showFeedback("Failed to save. Is the server running?", "error");
+        } finally {
+            saveBtn.disabled = false;
+        }
+    }
+
+    async function resetStrategy() {
+        if (!confirm("Reset to default voice strategy? Your custom strategy will be deleted.")) {
+            return;
+        }
+
+        try {
+            await fetch("/api/voice", { method: "DELETE" });
+            textarea.value = "";
+            isDefault = true;
+            localStorage.removeItem("sc-voice-draft");
+            updateStatus();
+            showFeedback("Reset to default. You can set a new strategy any time.", "success");
+        } catch {
+            showFeedback("Failed to reset.", "error");
+        }
+    }
+
+    async function generateFromLinkedIn() {
+        const linkedinText = document.getElementById("linkedin-textarea").value.trim();
+        const genBtn = document.getElementById("generate-btn");
+        const genFeedback = document.getElementById("generate-feedback");
+
+        if (!linkedinText) {
+            genFeedback.textContent = "Please paste your LinkedIn profile text first.";
+            genFeedback.className = "save-feedback error";
+            return;
+        }
+
+        genBtn.disabled = true;
+        genBtn.textContent = "Generating...";
+        genFeedback.textContent = "";
+
+        try {
+            const res = await fetch("/api/voice/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ linkedin_text: linkedinText }),
+            });
+            const data = await res.json();
+
+            if (data.error) {
+                genFeedback.textContent = data.error;
+                genFeedback.className = "save-feedback error";
+            } else {
+                textarea.value = data.strategy;
+                genFeedback.textContent = "Strategy generated! Review it above, then click Save.";
+                genFeedback.className = "save-feedback success";
+                // Scroll to the strategy textarea
+                textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+                textarea.focus();
+            }
+        } catch {
+            genFeedback.textContent = "Failed to generate. Is the server running?";
+            genFeedback.className = "save-feedback error";
+        } finally {
+            genBtn.disabled = false;
+            genBtn.textContent = "Generate Strategy";
+        }
+    }
+
+    function copyPrompt() {
+        const promptBox = document.getElementById("prompt-box");
+        const btn = document.getElementById("copy-prompt-btn");
+
+        // Get just the text content minus the button text
+        const text = promptBox.textContent.replace("Copy", "").replace("Copied!", "").trim();
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = "Copied!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+                btn.textContent = "Copy";
+                btn.classList.remove("copied");
+            }, 2000);
+        });
+    }
+
+    function showFeedback(msg, type) {
+        feedbackEl.textContent = msg;
+        feedbackEl.className = "save-feedback " + type;
+        setTimeout(() => { feedbackEl.textContent = ""; }, 5000);
+    }
+    </script>
+</body>
+</html>

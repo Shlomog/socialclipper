@@ -12,6 +12,9 @@ build/
 # App data
 output/
 uploads/
+voice_profile.txt
+api_key.txt
+jobs.json
 
 # Logs
 *.log

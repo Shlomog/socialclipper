@@ -6,7 +6,7 @@ from pathlib import Path
 from .downloader import is_url, download_video, get_video_title
 from .transcriber import transcribe
 from .analyzer import analyze_transcript
-from .clipper import extract_clip
+from .clipper import extract_clip, generate_srt
 from .drafter import generate_drafts
 from .output import create_output_folder, save_results
 
@@ -26,6 +26,7 @@ def run_pipeline(
     max_clips: int = 4,
     platforms: list[str] | None = None,
     whisper_model: str = "small",
+    subtitles: bool = False,
     on_progress=None,
 ) -> dict:
     """Run the full pipeline.
@@ -120,6 +121,13 @@ def run_pipeline(
         platform = clip_info["platform"]
         clip_filename = f"clip_{i}_{platform}.mp4"
         clip_path = output_dir / "clips" / clip_filename
+
+        # Generate SRT if subtitles enabled
+        srt_path = None
+        if subtitles:
+            srt_path = output_dir / "clips" / f"clip_{i}_{platform}.srt"
+            generate_srt(transcript, clip_info["start_time"], clip_info["end_time"], srt_path)
+
         try:
             extract_clip(
                 source_video=video_path,
@@ -127,6 +135,7 @@ def run_pipeline(
                 end_time=clip_info["end_time"],
                 platform=platform,
                 output_path=clip_path,
+                subtitles_path=srt_path,
             )
             clip_files.append(clip_filename)
             progress(f"Extracted clip {i}/{len(analysis['clips'])}: {clip_filename}")

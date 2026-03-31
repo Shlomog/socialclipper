@@ -90,6 +90,8 @@ form.addEventListener("submit", async (e) => {
     if (url) formData.append("url", url);
     if (file) formData.append("file", file);
     if (context) formData.append("context", context);
+    const subtitlesCheck = document.getElementById("subtitles-input");
+    if (subtitlesCheck && subtitlesCheck.checked) formData.append("subtitles", "on");
 
     // Show progress
     showSection("progress");

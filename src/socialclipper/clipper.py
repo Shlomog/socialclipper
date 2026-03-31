@@ -6,6 +6,68 @@ from pathlib import Path
 from .config import PLATFORM_SPECS
 
 
+def generate_srt(transcript: dict, start_time: float, end_time: float, output_path: Path) -> Path:
+    """Generate an SRT subtitle file from transcript segments within a time range.
+
+    Timestamps are offset so the clip starts at 0:00.
+    """
+    lines = []
+    idx = 1
+
+    for seg in transcript.get("segments", []):
+        seg_start = seg["start"]
+        seg_end = seg["end"]
+
+        # Skip segments outside the clip range
+        if seg_end <= start_time or seg_start >= end_time:
+            continue
+
+        # Clamp to clip boundaries
+        s = max(seg_start, start_time) - start_time
+        e = min(seg_end, end_time) - start_time
+
+        text = seg["text"].strip()
+        if not text:
+            continue
+
+        # Break long segments into shorter chunks (max ~10 words per subtitle)
+        words = text.split()
+        chunk_size = 10
+        seg_duration = e - s
+        word_count = len(words)
+
+        if word_count <= chunk_size:
+            lines.append(str(idx))
+            lines.append(f"{_srt_time(s)} --> {_srt_time(e)}")
+            lines.append(text)
+            lines.append("")
+            idx += 1
+        else:
+            # Split into chunks with proportional timing
+            for i in range(0, word_count, chunk_size):
+                chunk_words = words[i:i + chunk_size]
+                chunk_start = s + (i / word_count) * seg_duration
+                chunk_end = s + (min(i + chunk_size, word_count) / word_count) * seg_duration
+                lines.append(str(idx))
+                lines.append(f"{_srt_time(chunk_start)} --> {_srt_time(chunk_end)}")
+                lines.append(" ".join(chunk_words))
+                lines.append("")
+                idx += 1
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines), encoding="utf-8")
+    return output_path
+
+
+def _srt_time(seconds: float) -> str:
+    """Format seconds as SRT timestamp: HH:MM:SS,mmm"""
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    ms = int((seconds % 1) * 1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+
+
 ASPECT_RESOLUTIONS = {
     "16:9": (1920, 1080),
     "1:1": (1080, 1080),
@@ -51,6 +113,7 @@ def extract_clip(
     pad_seconds: float = 0.5,
     crop_position: float | None = None,
     aspect_ratio: str | None = None,
+    subtitles_path: Path | None = None,
 ) -> Path:
     """Extract a clip and format it for the target platform.
 
@@ -60,6 +123,7 @@ def extract_clip(
     If crop_position is provided (0.0-1.0), crops instead of padding
     to fill the frame without black bars.
     If aspect_ratio is provided (e.g. "9:16"), overrides the platform default.
+    If subtitles_path is provided, burns subtitles onto the video.
     """
     spec = PLATFORM_SPECS[platform]
 
@@ -71,12 +135,18 @@ def extract_clip(
 
     # Use crop filter when crop_position specified or aspect ratio overridden
     if aspect_ratio and aspect_ratio in ASPECT_RESOLUTIONS:
-        # Aspect ratio override always uses crop (default center if no crop_position)
         vf = _build_crop_vf(platform, crop_position if crop_position is not None else 0.5, aspect_ratio)
     elif crop_position is not None:
         vf = _build_crop_vf(platform, crop_position)
     else:
         vf = spec["ffmpeg_vf"]
+
+    # Append subtitle filter if SRT provided
+    if subtitles_path and subtitles_path.exists():
+        # Escape path for ffmpeg subtitles filter (colons, backslashes, single quotes)
+        escaped = str(subtitles_path).replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")
+        sub_style = "FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Bold=1"
+        vf += f",subtitles='{escaped}':force_style='{sub_style}'"
 
     cmd = [
         "ffmpeg",

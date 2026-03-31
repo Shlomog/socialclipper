@@ -1,29 +1,57 @@
 /* ============================================================
-   SocialClipper — Clean, minimal design
+   SocialClipper — Creator Vibrant Design
+   Dark bg, indigo-to-pink gradient accents, Outfit headings
    ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+
 :root {
-    --primary: #4F46E5;
-    --primary-hover: #4338CA;
-    --bg: #F9FAFB;
+    --primary: #818CF8;
+    --primary-hover: #6366F1;
+    --primary-rgb: 129, 140, 248;
+    --accent: #EC4899;
+    --bg: #0F0D1A;
+    --card-bg: rgba(255,255,255,0.04);
+    --card-border: rgba(255,255,255,0.08);
+    --text: #F3F4F6;
+    --text-light: #9CA3AF;
+    --border: rgba(255,255,255,0.1);
+    --success: #34D399;
+    --error: #F87171;
+    --radius: 16px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.2);
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root[data-theme="light"] {
+    --primary: #6366F1;
+    --primary-hover: #4F46E5;
+    --primary-rgb: 99, 102, 241;
+    --accent: #EC4899;
+    --bg: #F5F3FF;
     --card-bg: #FFFFFF;
-    --text: #111827;
+    --card-border: #E5E7EB;
+    --text: #1E1B4B;
     --text-light: #6B7280;
     --border: #E5E7EB;
     --success: #059669;
     --error: #DC2626;
-    --radius: 12px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-body);
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
     min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-heading);
 }
 
 .container {
@@ -36,12 +64,21 @@ body {
 header {
     text-align: center;
     margin-bottom: 32px;
+    position: relative;
 }
 
 header h1 {
-    font-size: 28px;
+    font-family: var(--font-heading);
+    font-size: 30px;
     font-weight: 700;
-    color: var(--primary);
+}
+
+header h1 a {
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 header .subtitle {
@@ -50,35 +87,112 @@ header .subtitle {
     margin-top: 4px;
 }
 
-/* Nav */
+/* Nav — pill style */
 .nav {
     display: flex;
     justify-content: center;
-    gap: 24px;
-    margin-top: 4px;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 4px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
-.nav a {
+:root[data-theme="light"] .nav {
+    background: rgba(99,102,241,0.06);
+}
+.nav-item {
+    display: flex;
+    align-items: center;
+}
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: var(--text-light);
     text-decoration: none;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 500;
-    padding: 6px 0;
-    border-bottom: 2px solid transparent;
+    padding: 8px 14px;
+    border-radius: 10px;
     transition: all 0.15s;
+    white-space: nowrap;
 }
-.nav a:hover { color: var(--primary); }
-.nav a.active {
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+:root[data-theme="light"] .nav-link:hover { background: rgba(99,102,241,0.06); }
+.nav-link.active {
+    color: white;
+    background: var(--primary);
+    font-weight: 600;
+}
+.nav-link.start-here {
     color: var(--primary);
-    border-bottom-color: var(--primary);
+    font-weight: 600;
+}
+.nav-link.active.start-here {
+    color: white;
+}
+.nav-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    color: var(--text-light);
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+:root[data-theme="light"] .nav-number {
+    background: rgba(99,102,241,0.1);
+}
+.nav-link.active .nav-number,
+.nav-link.start-here .nav-number {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+.nav-link.active .nav-number {
+    background: rgba(255,255,255,0.25);
+}
+.nav-arrow {
+    color: rgba(255,255,255,0.15);
+    font-size: 14px;
+    margin: 0 2px;
+    user-select: none;
+}
+:root[data-theme="light"] .nav-arrow { color: rgba(99,102,241,0.2); }
+.start-badge {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    background: rgba(236,72,153,0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 2px;
+}
+
+@media (max-width: 600px) {
+    .nav { flex-wrap: wrap; gap: 4px; padding: 4px; }
+    .nav-arrow { display: none; }
+    .start-badge { display: none; }
+    .nav-link { font-size: 12px; padding: 6px 10px; }
 }
 
 /* Cards */
 .card {
     background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 32px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 /* Input Group */
@@ -94,20 +208,28 @@ header .subtitle {
     margin-bottom: 6px;
 }
 
-.input-group input[type="text"] {
+.input-group input[type="text"],
+.input-group input[type="password"] {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 16px;
+    font-family: var(--font-body);
     color: var(--text);
+    background: rgba(255,255,255,0.03);
     transition: border-color 0.15s;
 }
+:root[data-theme="light"] .input-group input[type="text"],
+:root[data-theme="light"] .input-group input[type="password"] {
+    background: white;
+}
 
-.input-group input[type="text"]:focus {
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
 
 /* Divider */
@@ -140,12 +262,12 @@ header .subtitle {
 
 .upload-area:hover, .upload-area.dragover {
     border-color: var(--primary);
-    background: rgba(79, 70, 229, 0.03);
+    background: rgba(var(--primary-rgb), 0.05);
 }
 
 .upload-area.has-file {
     border-color: var(--success);
-    background: rgba(5, 150, 105, 0.03);
+    background: rgba(52, 211, 153, 0.05);
 }
 
 .upload-icon {
@@ -174,38 +296,45 @@ header .subtitle {
     display: block;
     width: 100%;
     padding: 14px 24px;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), #6366F1);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
+    font-family: var(--font-heading);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: transform 0.1s, box-shadow 0.2s;
     margin-top: 8px;
+    box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.25);
 }
 
-.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(var(--primary-rgb), 0.35);
+}
 .btn-primary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
 }
 
 .btn-secondary {
     display: inline-block;
     padding: 10px 20px;
-    background: var(--bg);
+    background: rgba(255,255,255,0.05);
     color: var(--text);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.15s;
 }
+:root[data-theme="light"] .btn-secondary { background: white; }
 
-.btn-secondary:hover { background: var(--border); }
+.btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: var(--primary); color: var(--primary); }
 
 .btn-copy {
     display: inline-flex;
@@ -215,11 +344,11 @@ header .subtitle {
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.15s;
 }
 
 .btn-copy:hover { background: var(--primary-hover); }
@@ -234,8 +363,8 @@ header .subtitle {
     padding: 8px 16px;
     background: transparent;
     color: var(--primary);
-    border: 1px solid var(--primary);
-    border-radius: 6px;
+    border: 1px solid rgba(var(--primary-rgb), 0.3);
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
@@ -244,7 +373,8 @@ header .subtitle {
 }
 
 .btn-download-clip:hover {
-    background: rgba(79, 70, 229, 0.05);
+    background: rgba(var(--primary-rgb), 0.08);
+    border-color: var(--primary);
 }
 
 /* Progress */
@@ -259,7 +389,7 @@ header .subtitle {
 
 .progress-bar {
     height: 100%;
-    background: var(--primary);
+    background: linear-gradient(90deg, var(--primary), var(--accent));
     border-radius: 3px;
     width: 0%;
     transition: width 0.3s;
@@ -293,7 +423,7 @@ header .subtitle {
 .tag {
     display: inline-block;
     padding: 4px 12px;
-    background: rgba(79, 70, 229, 0.08);
+    background: rgba(var(--primary-rgb), 0.12);
     color: var(--primary);
     border-radius: 20px;
     font-size: 13px;
@@ -301,18 +431,19 @@ header .subtitle {
 }
 
 .tag.platform {
-    background: rgba(5, 150, 105, 0.08);
+    background: rgba(52, 211, 153, 0.12);
     color: var(--success);
 }
 
 .tag.pillar {
-    background: rgba(217, 119, 6, 0.08);
-    color: #B45309;
+    background: rgba(236, 72, 153, 0.12);
+    color: var(--accent);
 }
 
 /* Clip Card */
 .clip-card {
     background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 28px;
@@ -320,6 +451,7 @@ header .subtitle {
 }
 
 .clip-card h3 {
+    font-family: var(--font-heading);
     font-size: 18px;
     font-weight: 700;
     margin-bottom: 8px;
@@ -334,15 +466,15 @@ header .subtitle {
 
 .clip-video {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-bottom: 16px;
     background: #000;
 }
 
 .draft-box {
-    background: var(--bg);
+    background: rgba(255,255,255,0.02);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 16px;
     margin-bottom: 12px;
     white-space: pre-wrap;
@@ -350,6 +482,7 @@ header .subtitle {
     line-height: 1.7;
     color: var(--text);
 }
+:root[data-theme="light"] .draft-box { background: #F9FAFB; }
 
 .clip-actions {
     display: flex;
@@ -369,9 +502,56 @@ header .subtitle {
     color: var(--text-light);
 }
 
+/* Voice banner */
+.voice-banner {
+    background: rgba(var(--primary-rgb), 0.08);
+    border: 1px solid rgba(var(--primary-rgb), 0.15);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.voice-banner a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.voice-banner a:hover {
+    text-decoration: underline;
+}
+
+/* Theme toggle */
+.theme-toggle {
+    position: absolute;
+    top: 8px;
+    right: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+:root[data-theme="light"] .theme-toggle {
+    background: rgba(99,102,241,0.06);
+    border-color: rgba(99,102,241,0.15);
+}
+.theme-toggle:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.1);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .container { padding: 20px 16px 60px; }
     .card { padding: 24px 20px; }
     header h1 { font-size: 24px; }
+    .theme-toggle { top: 4px; right: -4px; }
 }

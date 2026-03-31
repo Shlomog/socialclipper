@@ -1,7 +1,6 @@
 """Analyze transcript with Claude to find clip-worthy moments."""
 
 import json
-import anthropic
 
 from .config import (
     ANALYSIS_SYSTEM_PROMPT,
@@ -10,6 +9,8 @@ from .config import (
     CONTENT_TYPES,
     BRAND_PILLARS,
     format_time,
+    get_anthropic_client,
+    load_voice_strategy,
 )
 
 
@@ -30,7 +31,7 @@ def analyze_transcript(
     if on_progress:
         on_progress("Analyzing transcript for the best moments...")
 
-    client = anthropic.Anthropic()
+    client = get_anthropic_client()
 
     # Build timestamped transcript text — use raw seconds so Claude returns seconds
     segments_text = "\n".join(
@@ -53,6 +54,14 @@ def analyze_transcript(
         f"Content types: {', '.join(CONTENT_TYPES)}\n"
         f"Brand pillars: {', '.join(BRAND_PILLARS)}"
     )
+
+    voice_strategy = load_voice_strategy()
+    if voice_strategy:
+        system += (
+            "\n\nSPEAKER'S VOICE STRATEGY (use this to prioritize which moments "
+            "to select — pick moments that align with the speaker's goals, "
+            "audience, and topics):\n" + voice_strategy
+        )
 
     user_message = f"""Analyze this video transcript and identify the {max_clips} best \
 clip-worthy moments for social media.

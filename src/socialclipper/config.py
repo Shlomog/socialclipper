@@ -1,6 +1,75 @@
 """Configuration: voice rules, platform specs, prompt templates."""
 
+import os
+from pathlib import Path
+
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+_BASE_DIR = Path(__file__).resolve().parent.parent.parent
+_VOICE_PROFILE_PATH = _BASE_DIR / "voice_profile.txt"
+_API_KEY_PATH = _BASE_DIR / "api_key.txt"
+
+
+# ---------------------------------------------------------------------------
+# API key — stored in file, falls back to env var
+# ---------------------------------------------------------------------------
+def load_api_key() -> str | None:
+    """Load Anthropic API key from file, falling back to ANTHROPIC_API_KEY env var."""
+    if _API_KEY_PATH.exists():
+        key = _API_KEY_PATH.read_text(encoding="utf-8").strip()
+        if key:
+            return key
+    return os.environ.get("ANTHROPIC_API_KEY")
+
+
+def save_api_key(key: str) -> None:
+    """Save API key to api_key.txt."""
+    _API_KEY_PATH.write_text(key.strip(), encoding="utf-8")
+
+
+def delete_api_key() -> None:
+    """Delete the stored API key file (reverts to env var)."""
+    if _API_KEY_PATH.exists():
+        _API_KEY_PATH.unlink()
+
+
+def get_anthropic_client():
+    """Create an Anthropic client using the configured API key."""
+    import anthropic
+    key = load_api_key()
+    if not key:
+        raise RuntimeError(
+            "No Anthropic API key configured. Add one in Settings or set ANTHROPIC_API_KEY."
+        )
+    return anthropic.Anthropic(api_key=key)
+
+
+# ---------------------------------------------------------------------------
+# Voice strategy — user-defined content strategy loaded from file
+# ---------------------------------------------------------------------------
+
+
+def load_voice_strategy() -> str | None:
+    """Load the user's voice strategy from voice_profile.txt, or None if not set."""
+    if _VOICE_PROFILE_PATH.exists():
+        text = _VOICE_PROFILE_PATH.read_text(encoding="utf-8").strip()
+        if text:
+            return text
+    return None
+
+
+def save_voice_strategy(text: str) -> None:
+    """Save the user's voice strategy to voice_profile.txt."""
+    _VOICE_PROFILE_PATH.write_text(text.strip(), encoding="utf-8")
+
+
+def delete_voice_strategy() -> None:
+    """Delete the voice strategy file, reverting to defaults."""
+    if _VOICE_PROFILE_PATH.exists():
+        _VOICE_PROFILE_PATH.unlink()
 
 # ---------------------------------------------------------------------------
 # Platform specifications
