@@ -10,13 +10,13 @@ AI-powered video-to-social-clips pipeline. Drop in a video (or paste a YouTube U
 
 ## Screenshots
 
-![Home page — overview and getting started](docs/screenshot-home.png)
+![Home page — overview and getting started](docs/screenshot-home.png?v=2)
 
-![Create page — paste a URL or upload a video](docs/screenshot-create.png)
+![Create page — paste a URL or upload a video](docs/screenshot-create.png?v=2)
 
-![Voice Strategy — define your content strategy](docs/screenshot-voice.png)
+![Voice Strategy — define your content strategy](docs/screenshot-voice.png?v=2)
 
-![Settings — API key and cost breakdown](docs/screenshot-settings.png)
+![Settings — API key and cost breakdown](docs/screenshot-settings.png?v=2)
 
 ## Requirements
 
