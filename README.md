@@ -18,8 +18,6 @@ AI-powered video-to-social-clips pipeline. Drop in a video (or paste a YouTube U
 
 ![Settings — API key and cost breakdown](docs/screenshot-settings.png)
 
-![Library — browse clips, edit drafts, regenerate](docs/screenshot-library.png)
-
 ## Requirements
 
 - **macOS** with Apple Silicon (M1/M2/M3/M4) — MLX Whisper requires it
